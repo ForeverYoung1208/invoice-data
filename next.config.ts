@@ -1,7 +1,19 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  outputFileTracingExcludes: {
+    '/*': ['_docker/**/*'],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('typeorm');
+    }
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: ['**/node_modules', '**/_docker/**'],
+    };
+    return config;
+  },
 };
 
 export default nextConfig;
