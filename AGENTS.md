@@ -4,6 +4,9 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# For Code style rules see file .kiro/steering/CODESTYLE.md
+Before making any changes check that you read code style file and follow it.
+ 
 # Key Procedures
 ## Run the Application
 
@@ -69,38 +72,3 @@ This sets up the application with Postgres and binds the necessary volumes.
   ```bash
   npm start
   ```
-
-# Custom Skills
-To integrate custom skills into OpenCode sessions, add your skill configuration to the appropriate directory. Skills are typically stored in `.kilo/skills/` or similar directories and should include a `SKILL.md` file with a descriptive name and content.
-
-## Skill Configuration Example
-
-### Directory Structure
-```
-.kilo/skills/your-skill-name/
-├── SKILL.md
-└── (optional assets or scripts)
-```
-
-### SKILL.md Template
-```markdown
----
-name: your-skill-name
-description: A brief description of the skill's purpose.
----
-
-# Skill Name
-
-## Description
-Provide a detailed description of what the skill does and how it can be used.
-
-## Setup Instructions
-1. **Prerequisites**: List any prerequisites or dependencies.
-2. **Installation**: Steps to install or enable the skill.
-3. **Usage**: Examples of how to use the skill within OpenCode.
-
-## Examples
-Include example commands or scenarios where this skill would be useful.
-```
-
-By including this information in `AGENTS.md`, future OpenCode sessions will have a reference for integrating custom skills and understanding the project's configuration and setup.
