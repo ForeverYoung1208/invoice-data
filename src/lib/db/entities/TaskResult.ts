@@ -27,6 +27,6 @@ export class TaskResult {
   @JoinColumn({ name: 'taskId' })
   task: Task;
 
-  @Column()
+  @Column({ type: 'uuid' })
   taskId: string;
 }

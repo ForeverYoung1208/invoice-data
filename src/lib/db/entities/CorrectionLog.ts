@@ -27,6 +27,6 @@ export class CorrectionLog {
   @JoinColumn({ name: 'taskId' })
   task: Task;
 
-  @Column()
+  @Column({ type: 'uuid' })
   taskId: string;
 }

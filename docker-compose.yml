@@ -1,28 +1,36 @@
+x-app-base: &app-base
+  image: node:22-alpine
+  working_dir: /app
+  environment:
+    DATABASE_URL: postgresql://invoice:invoice@postgres:5432/invoice
+    AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-in-production}
+    ADMIN_USER: ${ADMIN_USER:-admin}
+    ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+    LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:4000/v1}
+    LLM_API_KEY: ${LLM_API_KEY:-dev-key}
+    LLM_MODEL: ${LLM_MODEL:-amazon.nova-lite-2-v1:0}
+    DATA_DIR: /data
+    NODE_ENV: development
+  volumes:
+    - .:/app
+    - /app/node_modules
+    - ./docker/app-files/data:/data
+  depends_on:
+    db:
+      condition: service_healthy
+  restart: unless-stopped
+
 services:
+
   app:
-    image: node:22-alpine
-    working_dir: /app
-    command: sh -c "npm install && npm run dev"
+    <<: *app-base
+    command: sh -c "npm install && npm run app:dev"
     ports:
       - "3000:3000"
-    environment:
-      DATABASE_URL: postgresql://invoice:invoice@postgres:5432/invoice
-      AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-in-production}
-      ADMIN_USER: ${ADMIN_USER:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
-      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:4000/v1}
-      LLM_API_KEY: ${LLM_API_KEY:-dev-key}
-      LLM_MODEL: ${LLM_MODEL:-amazon.nova-lite-2-v1:0}
-      DATA_DIR: /data
-      NODE_ENV: development
-    volumes:
-      - .:/app
-      - /app/node_modules
-      - ./docker/app-files/data:/data
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
+  
+  worker:
+    <<: *app-base
+    command: sh -c "npm install && npm run worker:dev"
 
   db:
     image: postgres:16

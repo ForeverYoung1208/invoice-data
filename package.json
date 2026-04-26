@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"npm run worker\"",
-    "worker": "tsx watch worker/index.ts",
+    "app:dev": "next dev",
+    "worker:dev": "tsx watch worker/index.ts",
     "build": "next build",
     "start": "concurrently \"next start\" \"npm run worker:prod\"",
     "worker:prod": "tsx worker/index.ts",

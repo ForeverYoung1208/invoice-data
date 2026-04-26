@@ -18,10 +18,10 @@ export class TaskFile {
   @Column({ type: 'enum', enum: TaskFileRole })
   role: TaskFileRole;
 
-  @Column()
+  @Column({ type: 'varchar', length: 2048 })
   filePath: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 2048 })
   originalName: string;
 
   @CreateDateColumn()
@@ -31,6 +31,6 @@ export class TaskFile {
   @JoinColumn({ name: 'taskId' })
   task: Task;
 
-  @Column()
+  @Column({ type: 'uuid' })
   taskId: string;
 }
