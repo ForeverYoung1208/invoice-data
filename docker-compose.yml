@@ -1,0 +1,42 @@
+services:
+  app:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://invoice:invoice@postgres:5432/invoice
+      AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-in-production}
+      ADMIN_USER: ${ADMIN_USER:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:4000/v1}
+      LLM_API_KEY: ${LLM_API_KEY:-dev-key}
+      LLM_MODEL: ${LLM_MODEL:-amazon.nova-lite-2-v1:0}
+      DATA_DIR: /data
+      NODE_ENV: development
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./docker/app-files/data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${TYPEORM_USERNAME}
+      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
+      POSTGRES_DB: ${TYPEORM_DATABASE}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TYPEORM_USERNAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
