@@ -1,6 +1,10 @@
-import NextAuth from 'next-auth';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { authService } from '@/lib/container';
+import { AuthService } from '@/lib/services/AuthService';
+
+const authService = new AuthService();
+
+class InvalidCredentials extends CredentialsSignin {}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -10,12 +14,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) return null;
+        if (!credentials?.username || !credentials?.password)
+          throw new InvalidCredentials();
         const user = await authService.verifyCredentials(
           credentials.username as string,
           credentials.password as string,
         );
-        if (!user) return null;
+        if (!user) throw new InvalidCredentials();
         return { id: user.id, name: user.username };
       },
     }),

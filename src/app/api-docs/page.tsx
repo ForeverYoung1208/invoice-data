@@ -1,5 +1,5 @@
-import { getApiSpec } from "@/lib/swagger";
-import SwaggerUIComponent from "./SwaggerUI";
+import { getApiSpec } from '@/lib/swagger';
+import SwaggerUIComponent from './SwaggerUI';
 
 export default function ApiDocsPage() {
   const spec = getApiSpec();
