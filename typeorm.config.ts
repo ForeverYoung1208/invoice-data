@@ -2,6 +2,11 @@ import { config } from 'dotenv';
 import 'reflect-metadata';
 import type { DataSourceOptions } from 'typeorm';
 import path from 'path';
+import { Task } from './src/lib/db/entities/Task';
+import { CorrectionLog } from './src/lib/db/entities/CorrectionLog';
+import { User } from './src/lib/db/entities/User';
+import { TaskResult } from './src/lib/db/entities/TaskResult';
+import { TaskFile } from './src/lib/db/entities/TaskFile';
 
 config();
 const {
@@ -37,7 +42,7 @@ const DataSourceOptions: DataSourceOptions = {
   database: process.env.TYPEORM_DATABASE,
   username: process.env.TYPEORM_USERNAME,
   password: process.env.TYPEORM_PASSWORD,
-  entities: [path.join(__dirname, 'src/lib/db/entities/*.{ts,js}')],
+  entities: [CorrectionLog, User, TaskResult, TaskFile, Task],
   migrations: [path.join(__dirname, 'src/lib/db/migrations/*.{ts,js}')],
   synchronize: false,
 };

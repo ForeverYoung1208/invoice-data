@@ -7,7 +7,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Task } from './Task';
+
+import type { Task } from './Task';
 
 @Entity('task_results')
 export class TaskResult {
@@ -23,7 +24,7 @@ export class TaskResult {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Task, (t) => t.results, { onDelete: 'CASCADE' })
+  @ManyToOne('Task', 'results', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'taskId' })
   task: Task;
 

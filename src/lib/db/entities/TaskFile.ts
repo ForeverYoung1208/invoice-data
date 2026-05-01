@@ -8,7 +8,8 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { TaskFileRole } from '../enums';
-import { Task } from './Task';
+
+import type { Task } from './Task';
 
 @Entity('task_files')
 export class TaskFile {
@@ -27,7 +28,7 @@ export class TaskFile {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Task, (t) => t.files, { onDelete: 'CASCADE' })
+  @ManyToOne('Task', 'files', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'taskId' })
   task: Task;
 

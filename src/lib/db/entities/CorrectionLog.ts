@@ -1,4 +1,3 @@
-import 'reflect-metadata';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,7 +6,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Task } from './Task';
+
+import type { Task } from './Task';
 
 @Entity('correction_logs')
 export class CorrectionLog {
@@ -23,7 +23,7 @@ export class CorrectionLog {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Task, (t) => t.corrections, { onDelete: 'CASCADE' })
+  @ManyToOne('Task', 'corrections', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'taskId' })
   task: Task;
 
