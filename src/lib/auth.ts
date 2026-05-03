@@ -29,4 +29,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: '/login',
   },
   session: { strategy: 'jwt' },
+  logger: {
+    error(error) {
+      if ((error as any).type === 'CredentialsSignin') {
+        console.error('CredentialsSignin error');
+        return;
+      }
+      console.error(error);
+    },
+  },
 });
