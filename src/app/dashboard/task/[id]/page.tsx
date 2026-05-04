@@ -7,6 +7,14 @@
  * Purpose: View extraction results, correct them, and approve or re-run.
  */
 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -71,21 +79,84 @@ const ROLE_COLORS: Record<string, string> = {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function JsonViewer({ data }: { data: object }) {
+function InvoicesTable({ invoices }: { invoices: any[] }) {
   return (
-    <pre className="text-xs text-slate-700 bg-slate-100 rounded-lg p-4 overflow-auto max-h-80 leading-relaxed border border-slate-200">
-      {JSON.stringify(data, null, 2)}
-    </pre>
+    <div className="overflow-x-auto">
+      <Table className="text-sm">
+        <TableHeader>
+          <TableRow className="border-slate-200 hover:bg-transparent">
+            <TableHead className="text-slate-600 w-[120px]">
+              Invoice #
+            </TableHead>
+            <TableHead className="text-slate-600">Client</TableHead>
+            <TableHead className="text-slate-600 w-[120px]">Date</TableHead>
+            <TableHead className="text-slate-600 w-[120px] text-right">
+              Total
+            </TableHead>
+            <TableHead className="text-slate-600">Items</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {invoices && invoices.length > 0 ? (
+            invoices.map((invoice, index) => (
+              <TableRow
+                key={index}
+                className="border-slate-200 hover:bg-slate-50"
+              >
+                <TableCell className="font-mono text-slate-700">
+                  {invoice.invoice_number}
+                </TableCell>
+                <TableCell className="text-slate-800">
+                  {invoice.client}
+                </TableCell>
+                <TableCell className="text-slate-700">{invoice.date}</TableCell>
+                <TableCell className="text-slate-800 text-right font-medium">
+                  {invoice.total?.toFixed(2)}
+                </TableCell>
+                <TableCell className="text-slate-700">
+                  {invoice.line_items && invoice.line_items.length > 0 ? (
+                    <div className="space-y-1">
+                      {invoice.line_items.map((item: any, i: number) => (
+                        <div key={i} className="text-xs text-slate-600">
+                          {item.qty}x {item.description} @ {item.unit_price}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    '-'
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                className="text-center text-slate-500 py-4"
+              >
+                No invoice data available
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 export default function TaskDetailPage({
+  searchParams,
   params,
 }: {
-  params: Promise<{ id: string }>;
+  searchParams: { [key: string]: string | string[] | undefined };
+  params: { id: string };
 }) {
+  // Handle async params using React.use() as per Next.js 16.2.4 requirements
+  const paramsResolved = params as unknown as Promise<{ id: string }>;
+  const { id: taskId } = use(paramsResolved);
+
   const router = useRouter();
   const [task, setTask] = useState<any>(null);
   const [result, setResult] = useState<any>(null);
@@ -93,9 +164,6 @@ export default function TaskDetailPage({
   const [corrections, setCorrections] = useState<any[]>([]);
   const [correctionText, setCorrectionText] = useState('');
   const [activeTab, setActiveTab] = useState('results');
-
-  // Get the task ID from params
-  const taskId = use(params).id;
 
   // Load task data from API
   useEffect(() => {
@@ -221,16 +289,21 @@ export default function TaskDetailPage({
             <TabsTrigger value="instructions">Instructions</TabsTrigger>
           </TabsList>
 
-          {/* ── Results tab ── */}
           <TabsContent value="results" className="space-y-4 mt-4">
             <Card className="bg-white border-slate-200 shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm text-slate-600 font-medium">
-                  Extracted Data
+                  Extracted Invoice Data
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {result && <JsonViewer data={result} />}
+                {result && result.invoices && result.invoices.length > 0 ? (
+                  <InvoicesTable invoices={result.invoices} />
+                ) : (
+                  <p className="text-sm text-slate-500 py-4 text-center">
+                    No invoice data available
+                  </p>
+                )}
               </CardContent>
             </Card>
 
