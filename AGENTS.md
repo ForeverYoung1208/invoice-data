@@ -17,6 +17,10 @@ npm run dev
 
 This runs both the Next.js server and the worker process concurrently. Ensure Docker is running and the required environment variables are set.
 
+## Searching for files, patterns, etc
+- search only within current project's folder and in nested folders, never search in ther directory tree above/outside of current project folder without direct permission;
+- exclude docker/postgres/data and docker/app-files/data folders;
+
 ## Database Management
 
 ### Migrations
