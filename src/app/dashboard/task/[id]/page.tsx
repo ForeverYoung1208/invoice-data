@@ -70,6 +70,37 @@ const MOCK_FILES = [
   { name: 'devices_register.csv', role: 'devices', size: '11 KB' },
 ];
 
+const MOCK_JOBS_SOURCE = [
+  {
+    ref_no: 'JOB-2026-0042',
+    date: '15/04/2026',
+    client: 'Acme Corp',
+    description: 'Engine service – full inspection, oil change, filter replacement. Diagnostic check on turbo.',
+    status: 'OPEN',
+  },
+  {
+    ref_no: 'JOB-2026-0043',
+    date: '16/04/2026',
+    client: 'Beta Industries',
+    description: 'Replace front brake pads (all 4 wheels). Fitting included.',
+    status: 'OPEN',
+  },
+  {
+    ref_no: 'JOB-2026-0044',
+    date: '16/04/2026',
+    client: 'Acme Corp',
+    description: 'Windshield wiper replacement, cabin air filter swap.',
+    status: 'VOID',
+  },
+  {
+    ref_no: 'JOB-2026-0045',
+    date: '17/04/2026',
+    client: 'Gamma LLC',
+    description: 'Scheduled maintenance – 60k km service. Check belts, fluids, battery.',
+    status: 'OPEN',
+  },
+];
+
 const ROLE_COLORS: Record<string, string> = {
   jobs: 'bg-blue-50 text-blue-700 border border-blue-200',
   clients: 'bg-purple-50 text-purple-700 border border-purple-200',
@@ -78,6 +109,56 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+function JobsSourceTable({
+  jobs,
+}: {
+  jobs: { ref_no: string; date: string; client: string; description: string; status: string }[];
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <Table className="text-sm">
+        <TableHeader>
+          <TableRow className="border-slate-200 hover:bg-transparent">
+            <TableHead className="text-slate-600 w-[120px]">Ref #</TableHead>
+            <TableHead className="text-slate-600 w-[100px]">Date</TableHead>
+            <TableHead className="text-slate-600 w-[130px]">Client</TableHead>
+            <TableHead className="text-slate-600">Description</TableHead>
+            <TableHead className="text-slate-600 w-[80px]">Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {jobs.map((job, index) => (
+            <TableRow
+              key={index}
+              className="border-slate-200 hover:bg-slate-50"
+            >
+              <TableCell className="font-mono text-slate-700">
+                {job.ref_no}
+              </TableCell>
+              <TableCell className="text-slate-700">{job.date}</TableCell>
+              <TableCell className="text-slate-800">{job.client}</TableCell>
+              <TableCell className="text-slate-700 text-xs">
+                {job.description}
+              </TableCell>
+              <TableCell>
+                <Badge
+                  className={
+                    job.status === 'VOID'
+                      ? 'bg-red-50 text-red-700 border border-red-200'
+                      : 'bg-green-50 text-green-700 border border-green-200'
+                  }
+                >
+                  {job.status}
+                </Badge>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
 
 function InvoicesTable({ invoices }: { invoices: any[] }) {
   return (
@@ -290,6 +371,17 @@ export default function TaskDetailPage({
           </TabsList>
 
           <TabsContent value="results" className="space-y-4 mt-4">
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm text-slate-600 font-medium">
+                  Source Data (Jobs)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <JobsSourceTable jobs={MOCK_JOBS_SOURCE} />
+              </CardContent>
+            </Card>
+
             <Card className="bg-white border-slate-200 shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm text-slate-600 font-medium">
