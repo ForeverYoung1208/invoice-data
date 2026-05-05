@@ -23,6 +23,11 @@ This runs both the Next.js server and the worker process concurrently. Ensure Do
 
 ## Database Management
 
+**IMPORTANT: NEVER perform destructive database operations without explicit permission**
+- NEVER DELETE, DROP, TRUNCATE, or modify any database data without direct explicit permission for each operation
+- Always ask for permission before running any SQL commands that change or delete data
+- This includes but is not limited to: DELETE, DROP, TRUNCATE, UPDATE (unless specifically approved)
+
 ### Migrations
 - Generate a new migration:
   ```bash
@@ -52,7 +57,7 @@ npm run db:seed
   - `LLM_*` variables: Configure the LLM provider (LiteLLM for dev, Bedrock for prod)
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 This sets up the application with Postgres and binds the necessary volumes.
