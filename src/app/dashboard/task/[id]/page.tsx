@@ -75,7 +75,8 @@ const MOCK_JOBS_SOURCE = [
     ref_no: 'JOB-2026-0042',
     date: '2026-04-15',
     client: 'Acme Corp',
-    description: 'Engine service – full inspection, oil change, filter replacement. Diagnostic check on turbo.',
+    description:
+      'Engine service – full inspection, oil change, filter replacement. Diagnostic check on turbo.',
     status: 'OPEN',
   },
   {
@@ -96,7 +97,8 @@ const MOCK_JOBS_SOURCE = [
     ref_no: 'JOB-2026-0045',
     date: '2026-04-17',
     client: 'Gamma LLC',
-    description: 'Scheduled maintenance – 60k km service. Check belts, fluids, battery.',
+    description:
+      'Scheduled maintenance – 60k km service. Check belts, fluids, battery.',
     status: 'OPEN',
   },
 ];
@@ -113,18 +115,37 @@ const ROLE_COLORS: Record<string, string> = {
 function JobsSourceTable({
   jobs,
 }: {
-  jobs: { ref_no: string; date: string; client: string; description: string; status: string }[];
+  jobs: {
+    ref_no: string;
+    date: string;
+    client: string;
+    description: string;
+    status: string;
+  }[];
 }) {
   return (
     <div>
       <Table className="text-sm table-fixed w-full">
         <TableHeader>
           <TableRow className="border-slate-200 hover:bg-transparent">
-            <TableHead className="text-slate-600" style={{ width: '15%' }}>Ref #</TableHead>
-            <TableHead className="text-slate-600" style={{ width: '12%' }}>Date</TableHead>
-            <TableHead className="text-slate-600" style={{ width: '15%' }}>Client</TableHead>
-            <TableHead className="text-slate-600 whitespace-normal" style={{ width: '48%' }}>Description</TableHead>
-            <TableHead className="text-slate-600" style={{ width: '10%' }}>Status</TableHead>
+            <TableHead className="text-slate-600" style={{ width: '15%' }}>
+              Ref #
+            </TableHead>
+            <TableHead className="text-slate-600" style={{ width: '12%' }}>
+              Date
+            </TableHead>
+            <TableHead className="text-slate-600" style={{ width: '15%' }}>
+              Client
+            </TableHead>
+            <TableHead
+              className="text-slate-600 whitespace-normal"
+              style={{ width: '48%' }}
+            >
+              Description
+            </TableHead>
+            <TableHead className="text-slate-600" style={{ width: '10%' }}>
+              Status
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -133,9 +154,7 @@ function JobsSourceTable({
               key={index}
               className="border-slate-200 hover:bg-slate-50"
             >
-              <TableCell className="text-slate-700">
-                {job.ref_no}
-              </TableCell>
+              <TableCell className="text-slate-700">{job.ref_no}</TableCell>
               <TableCell className="text-slate-700">{job.date}</TableCell>
               <TableCell className="text-slate-700">{job.client}</TableCell>
               <TableCell className="text-slate-700 whitespace-normal">
