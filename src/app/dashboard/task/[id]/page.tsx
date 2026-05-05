@@ -123,7 +123,7 @@ function JobsSourceTable({
             <TableHead className="text-slate-600" style={{ width: '15%' }}>Ref #</TableHead>
             <TableHead className="text-slate-600" style={{ width: '12%' }}>Date</TableHead>
             <TableHead className="text-slate-600" style={{ width: '15%' }}>Client</TableHead>
-            <TableHead className="text-slate-600" style={{ width: '48%' }}>Description</TableHead>
+            <TableHead className="text-slate-600 whitespace-normal" style={{ width: '48%' }}>Description</TableHead>
             <TableHead className="text-slate-600" style={{ width: '10%' }}>Status</TableHead>
           </TableRow>
         </TableHeader>
@@ -138,7 +138,7 @@ function JobsSourceTable({
               </TableCell>
               <TableCell className="text-slate-700">{job.date}</TableCell>
               <TableCell className="text-slate-700">{job.client}</TableCell>
-              <TableCell className="text-slate-700">
+              <TableCell className="text-slate-700 whitespace-normal">
                 {job.description}
               </TableCell>
               <TableCell>
