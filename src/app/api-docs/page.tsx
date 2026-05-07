@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getApiSpec } from '@/lib/swagger';
 import SwaggerUIComponent from './SwaggerUI';
 

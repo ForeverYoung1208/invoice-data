@@ -48,3 +48,15 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.ssh:/root/.ssh:ro
+    restart: unless-stopped

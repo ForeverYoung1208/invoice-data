@@ -250,12 +250,11 @@ export default function TaskDetailPage({
   searchParams,
   params,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
-  params: { id: string };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  params: Promise<{ id: string }>;
 }) {
   // Handle async params using React.use() as per Next.js 16.2.4 requirements
-  const paramsResolved = params as unknown as Promise<{ id: string }>;
-  const { id: taskId } = use(paramsResolved);
+  const { id: taskId } = use(params);
 
   const router = useRouter();
   const [task, setTask] = useState<any>(null);

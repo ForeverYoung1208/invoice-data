@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
-    '/*': ['_docker/**/*'],
+    '/*': ['docker/**/*'],
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     }
     config.watchOptions = {
       ...config.watchOptions,
-      ignored: ['**/node_modules', '**/_docker/**'],
+      ignored: ['**/node_modules', '**/docker/**'],
     };
     return config;
   },
