@@ -13,7 +13,7 @@ x-app-base: &app-base
     NODE_ENV: development
   volumes:
     - .:/app
-    - /app/node_modules
+    - invoice_node_modules:/app/node_modules
     - ./docker/app-files/data:/data
   depends_on:
     db:
@@ -55,8 +55,24 @@ services:
       dockerfile: Dockerfile
     stdin_open: true
     tty: true
+    environment:
+      - AWS_REGION=eu-central-1
+      - AWS_BEARER_TOKEN_BEDROCK=${AWS_BEARER_TOKEN_BEDROCK}
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - .:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
-      - ~/.ssh:/root/.ssh:ro
+      - ~/.ssh:/tmp/.ssh:ro
+      - ~/.pi:/tmp/.pi:ro
+      - dev_home:/root
+      - npm_global_modules:/usr/local/lib/node_modules
+      - npm_global_bin:/usr/local/bin
     restart: unless-stopped
+
+volumes:
+  npm_global_modules:
+  npm_global_bin:
+  dev_home:
+  invoice_node_modules:
