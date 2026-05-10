@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "app:dev": "next dev --webpack",
+    "app:dev": "next dev --webpack --hostname 0.0.0.0",
     "worker:dev": "tsx watch worker/index.ts",
     "build": "next build",
     "start": "concurrently \"next start\" \"npm run worker:prod\"",
