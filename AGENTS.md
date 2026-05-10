@@ -12,12 +12,41 @@ Before making any changes check that you read code style file and follow it.
 
 Use the following command to start the development server:
 ```bash
-npm run dev
+npm run app:dev > dev.log 2>&1 &
+
+> **Note:** This non-blocking startup with log capture is required for AI agents to maintain continuous operation and enable real-time monitoring through `dev.log`
 ```
 
 This runs both the Next.js server and the worker process concurrently. Ensure Docker is running and the required environment variables are set.
 
+### UI Testing
+To perform UI checks or create UI tests:
+1. **Install Playwright** (if not already installed):
+   ```bash
+   npm install playwright --save-dev
+   ```
+2. **Write tests** in the `tests/` directory (e.g., `tests/login.test.ts`).
+3. **Run tests** using:
+   ```bash
+   npx playwright test tests/<test-file>.ts --browser chromium
+   ```
+   Test automatically runs in headless mode (required for containers) and creates screenshot.
+
+### Start Application
+Use the following command to start the development server:
+```bash
+npm run app:dev > dev.log 2>&1 &
+
+> **Note:** This non-blocking startup with log capture is required for AI agents to maintain continuous operation and enable real-time monitoring through `dev.log`
+```
+
+This runs both the Next.js server and the worker process concurrently. Ensure Docker is running and the required environment variables are set.
+
+Check log file `dev.log` to ensure that application is running.
+
 ## Searching for files, patterns, etc
+- search only within current project's folder and in nested folders, never search in ther directory tree above/outside of current project folder without direct permission;
+- exclude docker/postgres/data and docker/app-files/data folders;
 - search only within current project's folder and in nested folders, never search in ther directory tree above/outside of current project folder without direct permission;
 - exclude docker/postgres/data and docker/app-files/data folders;
 
@@ -63,6 +92,11 @@ docker compose up
 This sets up the application with Postgres and binds the necessary volumes.
 
 ## Core Directories
+- `src/lib/db/entities`: TypeORM entities
+- `src/lib/services`: Business logic and service classes
+- `src/app/api`: Next.js API routes
+- `worker`: Background task processing
+- `tests/`: UI and API test files (Playwright, Jest, etc.)
 - `src/lib/db/entities`: TypeORM entities
 - `src/lib/services`: Business logic and service classes
 - `src/app/api`: Next.js API routes
