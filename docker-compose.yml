@@ -60,6 +60,7 @@ services:
       - AWS_BEARER_TOKEN_BEDROCK=${AWS_BEARER_TOKEN_BEDROCK}
     ports:
       - "3000:3000"
+      - "3001:3001"
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

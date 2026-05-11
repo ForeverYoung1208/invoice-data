@@ -20,13 +20,10 @@ npm run app:dev > dev.log 2>&1 &
 This runs both the Next.js server and the worker process concurrently. Ensure Docker is running and the required environment variables are set.
 
 ### UI Testing
+Do not use headed browsers, only use headless mode.
 To perform UI checks or create UI tests:
-1. **Install Playwright** (if not already installed):
-   ```bash
-   npm install playwright --save-dev
-   ```
-2. **Write tests** in the `tests/` directory (e.g., `tests/login.test.ts`).
-3. **Run tests** using:
+1. **Write tests** in the `tests/` directory (e.g., `tests/login.test.ts`).
+2. **Run tests** using:
    ```bash
    npx playwright test tests/<test-file>.ts --browser chromium
    ```
@@ -115,3 +112,12 @@ This sets up the application with Postgres and binds the necessary volumes.
   ```bash
   npm start
   ```
+
+# Impotant!
+- Never execute  `$ docker stop $(docker ps -q)` because it will stop all containers including dev container where coding agent is running!
+- If you need to stop and start containers use the following commands:
+  ```bash
+  docker compose stop <container_name>
+  docker compose start <container_name>
+  ```
+  where `<container_name>` is the name of the container you want to stop and start.
