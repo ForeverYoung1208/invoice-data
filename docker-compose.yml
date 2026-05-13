@@ -49,33 +49,6 @@ services:
       retries: 5
     restart: unless-stopped
 
-  dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    stdin_open: true
-    tty: true
-    environment:
-      - AWS_REGION=eu-central-1
-      - AWS_BEARER_TOKEN_BEDROCK=${AWS_BEARER_TOKEN_BEDROCK}
-    ports:
-      - "3000:3000"
-      - "3001:3001"
-
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - .:/workspace
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ~/.ssh:/tmp/.ssh:ro
-      - ~/.pi:/tmp/.pi:ro
-      - dev_home:/root
-      - npm_global_modules:/usr/local/lib/node_modules
-      - npm_global_bin:/usr/local/bin
-    restart: unless-stopped
-
 volumes:
   npm_global_modules:
-  npm_global_bin:
-  dev_home:
   invoice_node_modules:

@@ -75,7 +75,7 @@ npm run db:seed
 ```
 
 ## Environment Setup
-- A `.env.local` file is required. Use `.env.example` as a template.
+- A `.env` file is required. Use `.env.example` as a template.
 - Key variables:
   - `DATABASE_URL`: Postgres connection URL
   - `AUTH_SECRET`: NextAuth.js secret key
