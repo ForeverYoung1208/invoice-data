@@ -6,7 +6,7 @@
   │ 1   │ Project scaffold, Docker, DB schema, DI container │ 3h       │ Next.js init, TypeORM entities, migrations, Docker Compose, `/api/health`     
 Completed. Spent: 2h
   │ 2   │ Authentication                                    │ 2h       │ next-auth v5, login page, middleware, seed script                             │
-In progress.                        
+Completed. Spent: 1h. Note: Next.js 16 uses proxy.ts instead of middleware.ts
   │ 3   │ Task management UI & API                          │ 4h       │ Create task, file upload (4 files), instructions, task list page              │                        
   │ 4   │ Excel parsing layer                               │ 3h       │ 4 parser classes, typed interfaces, fixture files, unit tests                 │                        
   │ 5   │ LLM adapter                                       │ 2h       │ Abstract class, OpenAI-compatible impl, factory, env config, mock test        │                        
