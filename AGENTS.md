@@ -4,6 +4,14 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# Application description: ./.kiro/documentation/IDEA.md  - Read it first.
+
+
+# Progress tracking: ./.kiro/documentation/TRACKING.md - Use it when you need to read or update progress.
+
+# Tasks: ./.kiro/documentation/tasks/* - Use them to get task and write results of the task completion.
+
+ 
 # For Code style rules see file .kiro/steering/CODESTYLE.md
 Before making any changes check that you read code style file and follow it.
  
@@ -19,18 +27,9 @@ npm run app:dev > dev.log 2>&1 &
 
 This runs both the Next.js server and the worker process concurrently. Ensure Docker is running and the required environment variables are set.
 
-### UI Testing
-Do not use headed browsers, only use headless mode.
-To perform UI checks or create UI tests:
-1. **Write tests** in the `tests/` directory (e.g., `tests/login.test.ts`).
-2. **Run tests** using:
-   ```bash
-   npx playwright test tests/<test-file>.ts --browser chromium
-   ```
-   Test automatically runs in headless mode (required for containers) and creates screenshot.
-
 ### Start Application
-Use the following command to start the development server:
+Application could be already started by the user (check localhost:3000)
+If application isn't started use the following command to start the development server:
 ```bash
 npm run app:dev > dev.log 2>&1 &
 
@@ -39,7 +38,6 @@ npm run app:dev > dev.log 2>&1 &
 
 This runs both the Next.js server and the worker process concurrently. Ensure Docker is running and the required environment variables are set.
 
-Check log file `dev.log` to ensure that application is running.
 
 ## Searching for files, patterns, etc
 - search only within current project's folder and in nested folders, never search in ther directory tree above/outside of current project folder without direct permission;
@@ -112,12 +110,3 @@ This sets up the application with Postgres and binds the necessary volumes.
   ```bash
   npm start
   ```
-
-# Impotant!
-- Never execute  `$ docker stop $(docker ps -q)` because it will stop all containers including dev container where coding agent is running!
-- If you need to stop and start containers use the following commands:
-  ```bash
-  docker compose stop <container_name>
-  docker compose start <container_name>
-  ```
-  where `<container_name>` is the name of the container you want to stop and start.

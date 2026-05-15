@@ -60,94 +60,15 @@
       K -- Re-upload file --> F                                                                                                                                                 
       K -- Complete --> N[status = completed, archived]                                                                                                                         
       N --> O[Manual delete only]                                                                                                                                               
-                                                                                                                                                                                
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────               
-                                                                                                                                                                                
-  Task Breakdown:                                                                                                                                                               
-                                                                                                                                                                                
-  Task 1: Project scaffold, Docker setup, DB schema & DI container                                                                                                              
-                                                                                                                                                                                
-  - Objective: Runnable Next.js + Postgres environment with TypeORM entities, migrations, and service container                                                                 
-  - Implementation: create-next-app --typescript, add typeorm, pg, reflect-metadata, tailwindcss, shadcn/ui init. Entities: User, Task, TaskFile (role enum:                    
-  jobs/clients/parts/devices), TaskResult, CorrectionLog. DataSource singleton in lib/db/dataSource.ts cached on global. lib/container.ts instantiates and exports all service  
-  singletons. Docker Compose: app + postgres, EBS volume at /data. TypeORM CLI migration script                                                                                 
-  - Demo: docker compose up → app starts, DB migrates, /api/health returns 200 with DB ping                                                                                     
-                                                                                                                                                                                
-  Task 2: Authentication                                                                                                                                                        
-                                                                                                                                                                                
-  - Objective: Only authenticated users can access the app                                                                                                                      
-  - Implementation: next-auth v5 credentials provider. AuthService class in container: verifyCredentials(username, password) with bcrypt. Middleware protects all routes except 
-  /login. Seed script creates default admin from env vars (ADMIN_USER, ADMIN_PASSWORD). Login page with shadcn Card + Form                                                      
-  - Demo: Unauthenticated / redirects to /login; valid credentials grant access; invalid shows error                                                                            
-                                                                                                                                                                                
-  Task 3: Task management UI & API                                                                                                                                              
-                                                                                                                                                                                
-  - Objective: User can create tasks, upload 4 xlsx files with instructions, and see task list                                                                                  
-  - Implementation: TaskService class (TypeORM repository, registered in container). REST: POST /api/tasks, POST /api/tasks/[id]/files (multipart, saves to                     
-  /data/tasks/<id>/input/). Server Actions: saveInstructions(taskId, instructions). Home page: shadcn Table with status Badge. Task detail page: 4 labeled file inputs +        
-  instructions textarea                                                                                                                                                         
-  - Demo: Create task → upload 4 files → task appears in list with status uploaded                                                                                              
-                                                                                                                                                                                
-  Task 4: Excel parsing layer (OOP)                                                                                                                                             
-                                                                                                                                                                                
-  - Objective: Parse all 4 input xlsx files into typed domain objects                                                                                                           
-  - Implementation: Abstract ExcelParser<T> base class, concrete: JobsParser, ClientsParser, PartsParser, DevicePartsParser — each implements parse(filePath: string):          
-  Promise<T[]> via ExcelJS. Typed interfaces: JobRow, ClientRow, PartRow, DevicePartRow. Unit tests with fixture xlsx files covering normal + edge cases                        
-  - Demo: Unit tests pass; parsers return correctly typed arrays from fixture files                                                                                             
-                                                                                                                                                                                
-  Task 5: LLM adapter                                                                                                                                                           
-                                                                                                                                                                                
-  - Objective: Single LLM interface, zero code change between dev (LiteLLM) and prod (Bedrock)                                                                                  
-  - Implementation: Abstract LLMAdapter class, concrete OpenAICompatibleAdapter wraps ChatOpenAI with baseURL+apiKey+model from env (LLM_BASE_URL, LLM_API_KEY, LLM_MODEL).     
-  LLMAdapterFactory.create() registered in container. Unit test with mocked HTTP                                                                                                
-  - Demo: Factory returns correct adapter per env; mock test confirms prompt/response round-trip                                                                                
-                                                                                                                                                                                
-  Task 6: LangGraph agent — core invoice pipeline                                                                                                                               
-                                                                                                                                                                                
-  - Objective: StateGraph processing a task end-to-end: parse → match → validate → generate                                                                                     
-  - Implementation: InvoiceAgentState typed schema. Node classes: ParseNode, MatchPartsNode (LLM call per job → {partId, confidence, note?}[], flags low-confidence),           
-  ValidateCompatibilityNode (cross-checks device-parts map, adds compatibilityWarning), GenerateOutputNode (delegates to Task 7 classes). Linear edges with conditional re-entry
-  via CorrectionNode (Task 10). InvoiceAgent class wraps the compiled graph, registered in container. Integration test with fixture files + mocked LLM                          
-  - Demo: Running the graph on fixture inputs produces a valid ZIP with correct total sheet and per-client files                                                                
-                                                                                                                                                                                
-  Task 7: Excel output generation (OOP)                                                                                                                                         
-                                                                                                                                                                                
-  - Objective: Generate total_YYYY_MM_DD.xlsx and fill per-client invoice templates                                                                                             
-  - Implementation: TotalSheetBuilder: single sheet grouped by client, subtotals, Excel cell comments for flags/warnings. ClientTemplateWriter: opens template, locates date    
-  cell + line items table + total row by structural scanning, writes data. OutputZipper: assembles final ZIP. All registered in container. Unit tests with fixture templates    
-  - Demo: Unit tests confirm correct cell values; warnings appear as Excel cell comments                                                                                        
-                                                                                                                                                                                
-  Task 8: Background worker wiring                                                                                                                                              
-                                                                                                                                                                                
-  - Objective: Worker process picks up queued tasks and runs the LangGraph agent                                                                                                
-  - Implementation: WorkerService class in worker/index.ts — uses container to get InvoiceAgent + TaskService; polls tasks WHERE status='queued' every 5s with SELECT FOR UPDATE
-  SKIP LOCKED; updates status processing → review or failed with error stored. Run via concurrently in npm scripts. REST: POST /api/tasks/[id]/process sets status to queued    
-  - Demo: Upload files → click "Process" → status cycles to review within ~30s                                                                                                  
-                                                                                                                                                                                
-  Task 9: Review UI — results display, download & corrections                                                                                                                   
-                                                                                                                                                                                
-  - Objective: User reviews results, downloads ZIP, submits corrections                                                                                                         
-  - Implementation: Task detail page (status=review): TanStack Table grouped by client, flagged rows highlighted (yellow = uncertain, orange = compatibility warning). REST: GET
-  /api/tasks/[id]/download streams ZIP. Correction panel: shadcn Textarea + button → POST /api/tasks/[id]/corrections → saves to CorrectionLog, re-queues task. Re-upload panel 
-  replaces input file + re-queues. TanStack Query polls GET /api/tasks/[id] every 3s while processing                                                                           
-  - Demo: Result table shows flags; correction re-triggers processing; status updates live in UI                                                                                
-                                                                                                                                                                                
-  Task 10: Correction node in LangGraph                                                                                                                                         
-                                                                                                                                                                                
-  - Objective: Apply natural language corrections to task state before re-generating output                                                                                     
-  - Implementation: CorrectionNode activated when state.pendingCorrection is set — sends result JSON + correction message to LLM → returns updated result JSON. Supported:      
-  remove job, add/remove/move part, edit quantity. Graph continues to GenerateOutputNode after applying. Unit tests with mocked LLM per correction type                         
-  - Demo: "Move toner cartridge from job 2 to job 4" → result JSON updated → new ZIP generated                                                                                  
-                                                                                                                                                                                
-  Task 11: Task lifecycle completion & archive                                                                                                                                  
-                                                                                                                                                                                
-  - Objective: Completed tasks archived, browsable, manually deletable                                                                                                          
-  - Implementation: Server Action completeTask(taskId) sets status completed. Home page: two shadcn Tabs — "Active" and "Archive". Completed tasks: read-only, show date/client 
-  count/download link. Server Action deleteTask(taskId): removes DB record + EBS files                                                                                          
-  - Demo: Complete task → moves to Archive tab; ZIP downloadable; delete removes from list and disk                                                                             
-                                                                                                                                                                                
-  ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────               
-          
+                                                                
+        
+## Infrastructure
+
+- AWS CDK IaC scripts live in `infra/`
+- Provisions: EC2 (Amazon Linux) + EBS 4GB (mounted `/mnt/ebs`) + IAM role (`bedrock:InvokeModel`) + Security Group
+- Docker bind mounts in `docker-compose.yml` map to EBS paths (`/mnt/ebs/invoice_data`, `/mnt/ebs/postgres_data`)
+- See `infra/README.md` for full TODO list
+
 
 
 # User Stories — Agentic Invoice Generator                                                                                                                                      
@@ -157,7 +78,7 @@
   - As a user, I want to log in with a username and password so that only authorized staff can access the system.                                                               
   - As a user, I want to be automatically redirected to the login page if my session expires so that the system stays secure.                                                   
                                                                                                                                                                                 
-  Task Management                                                                                                                                                               
+## Task Management                                                                                                                                                               
                                                                                                                                                                                 
   - As a user, I want to create a new invoice task so that I can process a batch of completed repair jobs.                                                                      
   - As a user, I want to upload the list of completed works, the client list, the spare parts catalog, and the device catalog as Excel files so that the system has all the data
@@ -192,48 +113,7 @@
   ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────               
                                                                                                                                                                                 
   That's 20 stories covering the full scope. They're intentionally kept at the "what and why" level without technical detail — suitable for showing to end users for approval.  
-  Want me to add acceptance criteria to any of them, or adjust the language for a specific audience?                                                                            
-         
-
-# Implementation Task Tracker                                                                                                                                                   
-                                                                                                                                                                                
-  ┌─────┬───────────────────────────────────────────────────┬──────────┬───────────────────────────────────────────────────────────────────────────────┐                        
-  │ #   │ Task                                              │ Estimate │ Notes                                                                         │                        
-  ├─────┼───────────────────────────────────────────────────┼──────────┼───────────────────────────────────────────────────────────────────────────────┤                        
-  │ 1   │ Project scaffold, Docker, DB schema, DI container │ 3h       │ Next.js init, TypeORM entities, migrations, Docker Compose, `/api/health`     
-Spent: 2h
-│                        
-  │ 2   │ Authentication                                    │ 2h       │ next-auth v5, login page, middleware, seed script                             │                        
-  │ 3   │ Task management UI & API                          │ 4h       │ Create task, file upload (4 files), instructions, task list page              │                        
-  │ 4   │ Excel parsing layer                               │ 3h       │ 4 parser classes, typed interfaces, fixture files, unit tests                 │                        
-  │ 5   │ LLM adapter                                       │ 2h       │ Abstract class, OpenAI-compatible impl, factory, env config, mock test        │                        
-  │ 6   │ LangGraph agent — core pipeline                   │ 6h       │ StateGraph, 4 node classes, edges, integration test — most complex task       │                        
-  │ 7   │ Excel output generation                           │ 4h       │ TotalSheetBuilder, ClientTemplateWriter, OutputZipper, unit tests             │                        
-  │ 8   │ Background worker wiring                          │ 3h       │ WorkerService, polling loop, status transitions, concurrently setup           │                        
-  │ 9   │ Review UI                                         │ 4h       │ Results table, flags highlighting, download, correction panel, status polling │                        
-  │ 10  │ Correction node in LangGraph                      │ 3h       │ CorrectionNode, LLM prompt, result JSON update, unit tests                    │                        
-  │ 11  │ Task lifecycle & archive                          │ 2h       │ Complete/archive/delete, Archive tab, read-only view                          │                        
-  └─────┴───────────────────────────────────────────────────┴──────────┴───────────────────────────────────────────────────────────────────────────────┘                        
-                                                                                                                                                                                
-  Total estimate: ~36 hours                                                                                                                                                     
-                                                                                                                                                                                
-  ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                                                                                                                                                
-  Rough phasing if you work in sprints:                                                                                                                                         
-                                                                                                                                                                                
-  - Sprint 1 (foundation) — Tasks 1–3 → ~9h → working app shell with auth and file upload                                                                                       
-  - Sprint 2 (core engine) — Tasks 4–7 → ~15h → full agent pipeline producing correct output                                                                                    
-  - Sprint 3 (UX + polish) — Tasks 8–11 → ~12h → end-to-end usable product                                                                                                      
-                                                                                                                                                                                
-  ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-                                                                                                                                                                                
-  A few caveats on the estimates:                                                                                                                                               
-                                                                                                                                                                                
-  - Task 6 (LangGraph) is the biggest unknown — prompt engineering for part matching may need iteration                                                                         
-  - Task 7 depends on how varied the real client templates turn out to be — structural scanning can get tricky                                                                  
-  - These assume familiarity with the stack; LangGraph.js being new to you may add time to Tasks 6 and 10                                                                       
-                                                                                                                                                                                
-  Want me to proceed and hand this off to the execution agent to start with Task 1?                      
+  Want me to add acceptance criteria to any of them, or adjust the language for a specific audience?                            
 
 ## Infrastructure
 
