@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "test": "jest",
+    "test:e2e": "playwright test",
     "app:dev": "next dev --webpack --hostname 0.0.0.0",
     "worker:dev": "tsx watch worker/index.ts",
     "build": "next build",
