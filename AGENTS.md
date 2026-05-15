@@ -14,6 +14,75 @@ This version has breaking changes — APIs, conventions, and file structure may 
  
 # For Code style rules see file .kiro/steering/CODESTYLE.md
 Before making any changes check that you read code style file and follow it.
+
+## Project Structure Overview
+
+The project follows a typical Next.js/TypeORM structure with the following key directories:
+
+### 📁 `src/`
+**Core application code**
+- `app/`
+  - `api/`
+    - Authentication endpoints (`auth/[...nextauth]`)
+    - API routes (`health`, `tasks`, etc.)
+  - `dashboard/`
+    - Task management UI components
+    - Task detail page (`[id]`)
+    - File upload interface
+  - `login/`
+    - Authentication pages
+- `components/`
+  - UI components
+  - `ui/` for shared UI elements
+- `lib/`
+  - `db/`
+    - `entities/` (TypeORM entity definitions)
+    - `migrations/` (database migration files)
+  - `services/` (business logic/services)
+
+### 📁 `tests/`
+**Test suite**
+- Contains Playwright and Jest test files
+- Organized by feature (task detail, file upload, task list)
+- Includes test data and fixtures
+
+### 📁 `worker/`
+**Background processing**
+- Contains worker service implementation
+- Polling loop and status management
+- Integration with task processing system
+
+### 📁 `public/`
+**Static assets**
+- Contains static files served by Next.js
+
+### 📁 `docker/`
+**Infrastructure**
+- Docker Compose configuration
+- Postgres data volume setup
+- Application service definitions
+
+### 📄 Configuration Files
+- `.env.example` - Environment variable template
+- `docker-compose.yml` - Container orchestration
+- `package.json` - Project dependencies and scripts
+- `tsconfig.json` - TypeScript configuration
+- `next.config.js` - Next.js configuration
+
+### 🧪 Testing Infrastructure
+- `playwright.config.ts` - Playwright configuration
+- `jest.config.ts` - Jest configuration
+- `tests/` directory contains:
+  - E2E tests (Playwright)
+  - Unit tests (Jest)
+  - API tests
+  - Component tests
+
+### 📁 `node_modules/`
+**Dependencies**
+- Contains all npm packages
+- Includes Next.js, TypeORM, NextAuth.js, and other dependencies
+
  
 # Key Procedures
 ## Run the Application
@@ -86,16 +155,6 @@ docker compose up
 
 This sets up the application with Postgres and binds the necessary volumes.
 
-## Core Directories
-- `src/lib/db/entities`: TypeORM entities
-- `src/lib/services`: Business logic and service classes
-- `src/app/api`: Next.js API routes
-- `worker`: Background task processing
-- `tests/`: UI and API test files (Playwright, Jest, etc.)
-- `src/lib/db/entities`: TypeORM entities
-- `src/lib/services`: Business logic and service classes
-- `src/app/api`: Next.js API routes
-- `worker`: Background task processing
 
 ## Build and Test
 - Linting:
@@ -110,3 +169,4 @@ This sets up the application with Postgres and binds the necessary volumes.
   ```bash
   npm start
   ```
+
