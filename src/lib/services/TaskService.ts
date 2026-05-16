@@ -1,6 +1,7 @@
 import { getGlobalDataSource } from '../db/dataSource';
 import { Task } from '../db/entities/Task';
 import { TaskStatus } from '../db/enums';
+import { CorrectionLog } from '../db/entities/CorrectionLog';
 
 export class TaskService {
   async create(): Promise<Task> {
@@ -37,6 +38,16 @@ export class TaskService {
   async updateInstructions(id: string, instructions: string): Promise<void> {
     const ds = await getGlobalDataSource();
     await ds.getRepository(Task).update(id, { instructions });
+  }
+
+  async addCorrection(taskId: string, message: string): Promise<void> {
+    const ds = await getGlobalDataSource();
+    const correctionLogRepo = ds.getRepository(CorrectionLog);
+    const correction = correctionLogRepo.create({
+      taskId,
+      message,
+    });
+    await correctionLogRepo.save(correction);
   }
 
   async delete(id: string): Promise<void> {

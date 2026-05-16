@@ -7,180 +7,24 @@
  * Purpose: View extraction results, correct them, and approve or re-run.
  */
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import {
-  FileText,
-  ChevronLeft,
-  CheckCircle2,
-  RotateCcw,
-  Trash2,
-  MessageSquarePlus,
-  Clock,
-  Download,
-  Loader2,
-} from 'lucide-react';
+import { FileText, ChevronLeft, Loader2 } from 'lucide-react';
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-const ROLE_COLORS: Record<string, string> = {
-  jobs: 'bg-blue-50 text-blue-700 border border-blue-200',
-  clients: 'bg-purple-50 text-purple-700 border border-purple-200',
-  parts: 'bg-amber-50 text-amber-700 border border-amber-200',
-  devices: 'bg-green-50 text-green-700 border border-green-200',
-};
-
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function JobsSourceTable({
-  jobs,
-}: {
-  jobs: {
-    ref_no: string;
-    date: string;
-    client: string;
-    description: string;
-    status: string;
-  }[];
-}) {
-  return (
-    <div>
-      <Table className="text-sm table-fixed w-full">
-        <TableHeader>
-          <TableRow className="border-slate-200 hover:bg-transparent">
-            <TableHead className="text-slate-600" style={{ width: '15%' }}>
-              Ref #
-            </TableHead>
-            <TableHead className="text-slate-600" style={{ width: '12%' }}>
-              Date
-            </TableHead>
-            <TableHead className="text-slate-600" style={{ width: '15%' }}>
-              Client
-            </TableHead>
-            <TableHead
-              className="text-slate-600 whitespace-normal"
-              style={{ width: '48%' }}
-            >
-              Description
-            </TableHead>
-            <TableHead className="text-slate-600" style={{ width: '10%' }}>
-              Status
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {jobs.map((job, index) => (
-            <TableRow
-              key={index}
-              className="border-slate-200 hover:bg-slate-50"
-            >
-              <TableCell className="text-slate-700">{job.ref_no}</TableCell>
-              <TableCell className="text-slate-700">{job.date}</TableCell>
-              <TableCell className="text-slate-700">{job.client}</TableCell>
-              <TableCell className="text-slate-700 whitespace-normal">
-                {job.description}
-              </TableCell>
-              <TableCell>
-                <Badge
-                  className={
-                    job.status === 'VOID'
-                      ? 'bg-red-50 text-red-700 border border-red-200'
-                      : 'bg-green-50 text-green-700 border border-green-200'
-                  }
-                >
-                  {job.status}
-                </Badge>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-function InvoicesTable({ invoices }: { invoices: any[] }) {
-  return (
-    <div className="overflow-x-auto">
-      <Table className="text-sm">
-        <TableHeader>
-          <TableRow className="border-slate-200 hover:bg-transparent">
-            <TableHead className="text-slate-600 w-[120px]">
-              Invoice #
-            </TableHead>
-            <TableHead className="text-slate-600">Client</TableHead>
-            <TableHead className="text-slate-600 w-[120px]">Date</TableHead>
-            <TableHead className="text-slate-600 w-[120px] text-right">
-              Total
-            </TableHead>
-            <TableHead className="text-slate-600">Items</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {invoices && invoices.length > 0 ? (
-            invoices.map((invoice, index) => (
-              <TableRow
-                key={index}
-                className="border-slate-200 hover:bg-slate-50"
-              >
-                <TableCell className="font-mono text-slate-700">
-                  {invoice.invoice_number}
-                </TableCell>
-                <TableCell className="text-slate-800">
-                  {invoice.client}
-                </TableCell>
-                <TableCell className="text-slate-700">{invoice.date}</TableCell>
-                <TableCell className="text-slate-800 text-right font-medium">
-                  {invoice.total?.toFixed(2)}
-                </TableCell>
-                <TableCell className="text-slate-700">
-                  {invoice.line_items && invoice.line_items.length > 0 ? (
-                    <div className="space-y-1">
-                      {invoice.line_items.map((item: any, i: number) => (
-                        <div key={i} className="text-xs text-slate-600">
-                          {item.qty}x {item.description} @ {item.unit_price}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    '-'
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={5}
-                className="text-center text-slate-500 py-4"
-              >
-                No invoice data available
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  );
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────────
+import { TaskHeader } from '@/components/dashboard/task-detail/task-header';
+import { JobsSourceDataView } from '@/components/dashboard/task-detail/jobs-source-data-view';
+import { InvoicesTable } from '@/components/dashboard/task-detail/invoices-table';
+import { CorrectionForm } from '@/components/dashboard/task-detail/correction-form';
+import { FilesTab } from '@/components/dashboard/task-detail/files-tab';
+import { CorrectionsTab } from '@/components/dashboard/task-detail/corrections-tab';
+import { InstructionsTab } from '@/components/dashboard/task-detail/instructions-tab';
+import { TaskFooter } from '@/components/dashboard/task-detail/task-footer';
 
 export default function TaskDetailPage({
-  searchParams,
   params,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -213,9 +57,11 @@ export default function TaskDetailPage({
           createdAt: new Date(data.createdAt).toLocaleString('uk-UA'),
           updatedAt: new Date(data.updatedAt).toLocaleString('uk-UA'),
         });
-        setResult(data.result);
+        const latestResult = data.results && data.results.length > 0 ? data.results[0] : null;
+        setResult(latestResult ? latestResult.resultJson : null);
         setFiles(
           data.files.map((f: any) => ({
+            id: f.id,
             name: f.originalName,
             role: f.role,
             size: `${(f.filePath || '').split('/').pop() || '—'}`,
@@ -238,30 +84,77 @@ export default function TaskDetailPage({
     loadTask();
   }, [taskId]);
 
-  const handleSubmitCorrection = () => {
-    // Submit correction to API
-    console.log('Submitting correction:', correctionText);
-    setCorrections([
-      ...corrections,
-      {
-        id: corrections.length + 1,
-        message: correctionText,
-        createdAt: new Date().toISOString(),
-      },
-    ]);
-    setCorrectionText('');
+  const handleSubmitCorrection = async () => {
+    if (!correctionText.trim()) return;
+    
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correction: correctionText }),
+      });
+
+      if (!res.ok) throw new Error('Failed to submit correction');
+
+      // Refresh task data to show new correction
+      const refreshRes = await fetch(`/api/tasks/${taskId}`);
+      const data = await refreshRes.json();
+      
+      setCorrections(
+        data.corrections.map((c: any) => ({
+          id: c.id,
+          message: c.message,
+          createdAt: new Date(c.createdAt).toLocaleString('uk-UA'),
+        })),
+      );
+      setCorrectionText('');
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to submit correction');
+    }
   };
 
-  const handleApprove = () => {
-    // Mark task as approved
-    console.log('Approving task');
-    // TODO: Call API to update status
+  const handleApprove = async () => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      });
+
+      if (!res.ok) throw new Error('Failed to approve task');
+
+      // Refresh task data
+      const refreshRes = await fetch(`/api/tasks/${taskId}`);
+      const data = await refreshRes.json();
+      setTask({
+        ...task,
+        status: data.status,
+      });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to approve task');
+    }
   };
 
-  const handleReRun = () => {
-    // Re-run task
-    console.log('Re-running task');
-    // TODO: Call API to re-run task
+  const handleReRun = async () => {
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'queued' }),
+      });
+
+      if (!res.ok) throw new Error('Failed to re-run task');
+
+      // Refresh task data
+      const refreshRes = await fetch(`/api/tasks/${taskId}`);
+      const data = await refreshRes.json();
+      setTask({
+        ...task,
+        status: data.status,
+      });
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to re-run task');
+    }
   };
 
   const handleDelete = async () => {
@@ -279,7 +172,7 @@ export default function TaskDetailPage({
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
-      </div>
+      </div >
     );
   }
 
@@ -289,8 +182,8 @@ export default function TaskDetailPage({
         <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-md max-w-md text-center">
           <h2 className="font-semibold mb-2">Error</h2>
           <p className="text-sm">{error}</p>
-        </div>
-      </div>
+        </div >
+      </div >
     );
   }
 
@@ -302,10 +195,12 @@ export default function TaskDetailPage({
           <Link href="/dashboard">
             <Button>Back to Tasks</Button>
           </Link>
-        </div>
-      </div>
+        </div >
+      </div >
     );
   }
+
+  const jobsFile = files.find(f => f.role === 'jobs');
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
@@ -323,42 +218,16 @@ export default function TaskDetailPage({
         <div className="flex items-center gap-2">
           <div className="bg-blue-50 p-2 rounded-full ring-1 ring-blue-200">
             <FileText className="w-5 h-5 text-blue-600" />
-          </div>
+          </div >
           <span className="text-lg font-semibold tracking-tight">
             InvoiceApp
           </span>
-        </div>
+        </div >
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8 space-y-6">
         {/* Task header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-bold font-mono">{task.id}</h1>
-              <Badge className="bg-purple-50 text-purple-700 border border-purple-200">
-                {task.status}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-4 mt-1 text-xs text-slate-500">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Created {task.createdAt}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Updated {task.updatedAt}
-              </span>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 gap-1.5"
-            >
-              <Download className="w-3.5 h-3.5" /> Download ZIP
-            </Button>
-          </div>
-        </div>
+        <TaskHeader task={task} />
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -379,23 +248,8 @@ export default function TaskDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {files.length > 0 ? (
-                  <div className="text-sm text-slate-600 space-y-2">
-                    {files
-                      .filter((f: any) => f.role === 'jobs')
-                      .map((f: any) => (
-                        <div
-                          key={f.name}
-                          className="flex items-center gap-2 py-2 px-3 rounded-md bg-slate-50 border border-slate-200"
-                        >
-                          <FileText className="w-4 h-4 text-slate-600" />
-                          <span className="text-slate-700">{f.name}</span>
-                        </div>
-                      ))}
-                    <p className="text-xs text-slate-400 pt-2">
-                      Parsed source data will be shown here after processing
-                    </p>
-                  </div>
+                {jobsFile ? (
+                  <JobsSourceDataView fileId={jobsFile.id} />
                 ) : (
                   <p className="text-sm text-slate-500 py-4 text-center">
                     No jobs file uploaded
@@ -422,133 +276,30 @@ export default function TaskDetailPage({
             </Card>
 
             {/* Correction form */}
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm text-slate-600 font-medium flex items-center gap-2">
-                  <MessageSquarePlus className="w-4 h-4" /> Request Correction
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="correction"
-                    className="text-slate-700 text-sm"
-                  >
-                    Describe what needs to be fixed
-                  </Label>
-                  <Textarea
-                    id="correction"
-                    value={correctionText}
-                    onChange={(e) => setCorrectionText(e.target.value)}
-                    placeholder="e.g. The total for INV-2026-0042 is wrong. Recalculate from line items."
-                    className="bg-white border-slate-300 focus:border-blue-400 min-h-[80px] text-sm resize-none"
-                  />
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="border-slate-300 text-slate-700 hover:bg-slate-50 gap-1.5"
-                  onClick={handleSubmitCorrection}
-                  disabled={!correctionText.trim()}
-                >
-                  <MessageSquarePlus className="w-3.5 h-3.5" /> Submit
-                  Correction
-                </Button>
-              </CardContent>
-            </Card>
+            <CorrectionForm
+              correctionText={correctionText}
+              setCorrectionText={setCorrectionText}
+              onSubmit={handleSubmitCorrection}
+            />
           </TabsContent>
 
           {/* ── Files tab ── */}
-          <TabsContent value="files" className="mt-4">
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardContent className="pt-4 space-y-2">
-                {files.map((f) => (
-                  <div
-                    key={f.name}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-4 h-4 text-slate-600" />
-                      <span className="text-sm text-slate-800">{f.name}</span>
-                      <Badge className={`text-xs ${ROLE_COLORS[f.role]}`}>
-                        {f.role}
-                      </Badge>
-                    </div>
-                    <span className="text-xs text-slate-500">{f.size}</span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
+          <FilesTab files={files} />
 
           {/* ── Corrections tab ── */}
-          <TabsContent value="corrections" className="mt-4">
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardContent className="pt-4 space-y-3">
-                {corrections.map((c) => (
-                  <div
-                    key={c.id}
-                    className="rounded-md bg-slate-50 p-4 space-y-1 border border-slate-200"
-                  >
-                    <p className="text-sm text-slate-800">{c.message}</p>
-                    <p className="text-xs text-slate-500 flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {c.createdAt}
-                    </p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </TabsContent>
+          <CorrectionsTab corrections={corrections} />
 
           {/* ── Instructions tab ── */}
-          <TabsContent value="instructions" className="mt-4">
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardContent className="pt-4">
-                <p className="text-sm text-slate-700 leading-relaxed">
-                  Dates are in DD/MM/YYYY format. Map the{' '}
-                  <code className="text-blue-600 bg-blue-50 px-1 rounded border border-blue-200">
-                    ref_no
-                  </code>{' '}
-                  column to invoice number. Ignore rows where status is{' '}
-                  <code className="text-blue-600 bg-blue-50 px-1 rounded border border-blue-200">
-                    VOID
-                  </code>
-                  .
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          <InstructionsTab />
         </Tabs>
       </main>
 
       {/* Bottom action bar */}
-      <footer className="border-t border-slate-200 bg-white px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-red-600 hover:text-red-700 hover:bg-red-50 gap-1.5"
-          onClick={handleDelete}
-        >
-          <Trash2 className="w-4 h-4" /> Delete Task
-        </Button>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-slate-300 text-slate-700 hover:bg-slate-50 gap-1.5"
-            onClick={handleReRun}
-          >
-            <RotateCcw className="w-3.5 h-3.5" /> Re-run
-          </Button>
-          <Button
-            size="sm"
-            className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
-            onClick={handleApprove}
-          >
-            <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-          </Button>
-        </div>
-      </footer>
-    </div>
+      <TaskFooter
+        onDelete={handleDelete}
+        onReRun={handleReRun}
+        onApprove={handleApprove}
+      />
+    </div >
   );
 }

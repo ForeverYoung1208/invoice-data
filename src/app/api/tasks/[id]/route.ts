@@ -40,6 +40,37 @@ import { CorrectionLog } from '@/lib/db/entities/CorrectionLog';
  *         description: Task not found
  *       500:
  *         description: Internal server error
+ *   patch:
+ *     summary: Update task status, instructions, or add a correction
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *               errorMessage:
+ *                 type: string
+ *               instructions:
+ *                 type: string
+ *               correction:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Task updated successfully
+ *       404:
+ *         description: Task not found
+ *       500:
+ *         description: Internal server error
  */
 export async function GET(
   _req: NextRequest,
@@ -101,6 +132,44 @@ export async function GET(
     console.error('Error fetching task:', error);
     return NextResponse.json(
       { error: 'Failed to fetch task' },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+
+    const task = await taskService.findById(id);
+    if (!task) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    // 1. Handle correction if provided
+    if (body.correction) {
+      await taskService.addCorrection(id, body.correction);
+    }
+
+    // 2. Handle status update if provided
+    if (body.status) {
+      await taskService.updateStatus(id, body.status, body.errorMessage);
+    }
+
+    // 3. Handle instructions update if provided
+    if (body.instructions !== undefined) {
+      await taskService.updateInstructions(id, body.instructions);
+    }
+
+    return NextResponse.json({ message: 'Task updated successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('Error updating task:', error);
+    return NextResponse.json(
+      { error: 'Failed to update task' },
       { status: 500 },
     );
   }
