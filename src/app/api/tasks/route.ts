@@ -10,6 +10,13 @@ import { existsSync } from 'fs';
 /**
  * @swagger
  * /api/tasks:
+ *   get:
+ *     summary: List all tasks
+ *     responses:
+ *       200:
+ *         description: List of tasks
+ *       500:
+ *         description: Internal server error
  *   post:
  *     summary: Create a new task with file uploads
  *     requestBody:
@@ -53,6 +60,34 @@ import { existsSync } from 'fs';
  *       500:
  *         description: Internal server error
  */
+export async function GET() {
+  try {
+    const ds = await getGlobalDataSource();
+    const tasks = await taskService.findAll();
+    const taskFileRepo = ds.getRepository(TaskFile);
+
+    const result = await Promise.all(
+      tasks.map(async (task) => {
+        const files = await taskFileRepo.find({ where: { taskId: task.id } });
+        return {
+          id: task.id,
+          status: task.status,
+          createdAt: task.createdAt.toISOString(),
+          filesCount: files.length,
+        };
+      }),
+    );
+
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
+    console.error('Error listing tasks:', error);
+    return NextResponse.json(
+      { error: 'Failed to list tasks' },
+      { status: 500 },
+    );
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();

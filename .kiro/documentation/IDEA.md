@@ -2,18 +2,18 @@
                                                                                                                                                                                 
   Problem Statement:                                                                                                                                                            
                                                                                                                                                                                 
-  A Next.js web app where authenticated users upload 4 Excel reference files per task, and a LangGraph.js agent parses free-text repair job descriptions, matches spare parts   
-  from a catalog, and generates per-client invoice Excel files — with an iterative natural-language correction loop before archiving completed tasks.                           
+  A Next.js web app where authenticated users upload 4 CSV reference files per task, and a LangGraph.js agent parses free-text repair job descriptions, matches spare parts   
+  from a catalog, and generates per-client invoice CSV files — with an iterative natural-language correction loop before archiving completed tasks.                           
                                                                                                                                                                                 
    ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────               
                                                                                                                                                                                 
   Requirements:                                                                                                                                                                 
                                                                                                                                                                                 
   - Basic auth (credentials-based, POC level) to block unauthenticated access                                                                                                   
-  - Upload 4 Excel input files per task + optional global/per-row instructions                                                                                                  
+  - Upload 4 CSV input files per task + optional global/per-row instructions                                                                                                  
   - LangGraph.js agent: parse jobs → match parts → check device compatibility → generate output                                                                                 
   - Uncertain matches flagged with comments; incompatible parts get soft warnings in total sheet                                                                                
-  - Output: ZIP with total_YYYY_MM_DD.xlsx (single sheet, grouped by client) + per-client invoice files                                                                         
+  - Output: ZIP with total_YYYY_MM_DD.csv (single sheet, grouped by client) + per-client invoice CSV files                                                                         
   - Per-client templates have hardcoded headers; agent fills date, line items table, total row                                                                                  
   - Iterative corrections: re-upload file OR natural language (agent applies to current state)                                                                                  
   - Task lifecycle: uploaded → queued → processing → review → completed (archived)                                                                                              
@@ -34,7 +34,7 @@
   environments                                                                                                                                                                  
   - TypeORM global DataSource singleton cached on global for HMR safety; entities imported explicitly                                                                           
   - next-auth v5 credentials provider: bcrypt-hashed password in DB, JWT session cookie                                                                                         
-  - ExcelJS for all xlsx read/write; template filling by scanning for structural markers                                                                                        
+  - CSV parsing/writing; template filling by scanning for structural markers                                                                                        
   - Background worker: standalone Node.js process polling Postgres with SELECT FOR UPDATE SKIP LOCKED; runs alongside Next.js via concurrently                                  
   - Manual DI: lib/container.ts instantiates all service singletons at startup (TaskService, AuthService, LLMAdapterFactory, etc.) and exports them — no framework needed       
   - shadcn/ui DataTable pattern uses TanStack Table v8 — handles grouping/sorting for results view                                                                              
@@ -44,7 +44,7 @@
   Proposed Solution:                                                                                                                                                            
                                                                                                                                                                                 
   flowchart TD                                                                                                                                                                  
-      A[User logs in] --> B[Create task, upload 4 xlsx + instructions]                                                                                                          
+      A[User logs in] --> B[Create task, upload 4 CSV files + instructions]                                                                                                          
       B --> C[Task saved to DB, files to EBS]                                                                                                                                   
       C --> D[Click Process → status = queued]                                                                                                                                  
       D --> E[Worker polls DB, picks up task]                                                                                                                                   
@@ -54,7 +54,7 @@
       H --> I[LangGraph: GenerateOutputNode]                                                                                                                                    
       I --> J[ZIP created on EBS, status = review]                                                                                                                              
       J --> K{User reviews}                                                                                                                                                     
-      K -- Download ZIP --> L[User checks in Excel]                                                                                                                             
+      K -- Download ZIP --> L[User checks in spreadsheet]                                                                                                                             
       K -- Natural language correction --> M[LangGraph: CorrectionNode]                                                                                                         
       M --> I                                                                                                                                                                   
       K -- Re-upload file --> F                                                                                                                                                 
@@ -81,7 +81,7 @@
 ## Task Management                                                                                                                                                               
                                                                                                                                                                                 
   - As a user, I want to create a new invoice task so that I can process a batch of completed repair jobs.                                                                      
-  - As a user, I want to upload the list of completed works, the client list, the spare parts catalog, and the device catalog as Excel files so that the system has all the data
+  - As a user, I want to upload the list of completed works, the client list, the spare parts catalog, and the device catalog as CSV files so that the system has all the data
   it needs.                                                                                                                                                                     
   - As a user, I want to add general instructions for the whole task so that I can guide the agent on special cases for this batch.                                             
   - As a user, I want to see all my active tasks in a list with their current status so that I know what is in progress.                                                        
@@ -97,7 +97,7 @@
                                                                                                                                                                                 
   Review & Corrections                                                                                                                                                          
                                                                                                                                                                                 
-  - As a user, I want to download a ZIP archive containing the total summary sheet and individual client invoice files so that I can review them in Excel.                      
+  - As a user, I want to download a ZIP archive containing the total summary sheet and individual client invoice CSV files so that I can review them.                      
   - As a user, I want to see the processing results in the app as a table grouped by client so that I can review them without downloading.                                      
   - As a user, I want flagged and warned items to be visually highlighted in the results table so that I can find issues at a glance.                                           
   - As a user, I want to type a natural language correction (e.g. "remove job 5", "move the toner cartridge to job 3") so that I can fix mistakes without re-uploading files.   

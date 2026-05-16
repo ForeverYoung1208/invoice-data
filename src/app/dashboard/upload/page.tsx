@@ -316,11 +316,12 @@ export default function UploadPage() {
                         {slot.label}
                       </p>
                       <p className="text-xs text-slate-500 mb-2">
-                        {slot.description}
+                        {slot.description} (.csv)
                       </p>
                       <p className="text-xs text-blue-600 hover:text-blue-700">
                         Click to upload or drag and drop
                       </p>
+                      <p className="text-xs text-slate-400 mt-1">Accepted: .csv</p>
                       {slot.required && (
                         <Badge className="mt-2 text-xs bg-red-50 text-red-700 border border-red-200">
                           Required

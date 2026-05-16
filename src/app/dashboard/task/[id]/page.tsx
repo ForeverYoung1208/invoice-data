@@ -30,78 +30,11 @@ import {
   MessageSquarePlus,
   Clock,
   Download,
+  Loader2,
 } from 'lucide-react';
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-// ── Mock data ─────────────────────────────────────────────────────────────────
-
-const MOCK_RESULT = {
-  invoices: [
-    {
-      invoice_number: 'INV-2026-0042',
-      client: 'Acme Corp',
-      date: '2026-04-15',
-      total: 4850.0,
-      line_items: [
-        { description: 'Labour – engine service', qty: 2, unit_price: 150.0 },
-        { description: 'Oil filter (OEM)', qty: 1, unit_price: 45.0 },
-        { description: 'Diagnostic fee', qty: 1, unit_price: 80.0 },
-      ],
-    },
-    {
-      invoice_number: 'INV-2026-0043',
-      client: 'Beta Industries',
-      date: '2026-04-16',
-      total: 1200.0,
-      line_items: [
-        { description: 'Brake pad set', qty: 4, unit_price: 120.0 },
-        { description: 'Fitting', qty: 1, unit_price: 80.0 },
-      ],
-    },
-  ],
-};
-
-const MOCK_FILES = [
-  { name: 'jobs_april_2026.csv', role: 'jobs', size: '42 KB' },
-  { name: 'clients.csv', role: 'clients', size: '18 KB' },
-  { name: 'parts_catalogue.csv', role: 'parts', size: '95 KB' },
-  { name: 'devices_register.csv', role: 'devices', size: '11 KB' },
-];
-
-const MOCK_JOBS_SOURCE = [
-  {
-    ref_no: 'JOB-2026-0042',
-    date: '2026-04-15',
-    client: 'Acme Corp',
-    description:
-      'Engine service – full inspection, oil change, filter replacement. Diagnostic check on turbo.',
-    status: 'OPEN',
-  },
-  {
-    ref_no: 'JOB-2026-0043',
-    date: '2026-04-16',
-    client: 'Beta Industries',
-    description: 'Replace front brake pads (all 4 wheels). Fitting included.',
-    status: 'OPEN',
-  },
-  {
-    ref_no: 'JOB-2026-0044',
-    date: '2026-04-16',
-    client: 'Acme Corp',
-    description: 'Windshield wiper replacement, cabin air filter swap.',
-    status: 'VOID',
-  },
-  {
-    ref_no: 'JOB-2026-0045',
-    date: '2026-04-17',
-    client: 'Gamma LLC',
-    description:
-      'Scheduled maintenance – 60k km service. Check belts, fluids, battery.',
-    status: 'OPEN',
-  },
-];
 
 const ROLE_COLORS: Record<string, string> = {
   jobs: 'bg-blue-50 text-blue-700 border border-blue-200',
@@ -263,28 +196,48 @@ export default function TaskDetailPage({
   const [corrections, setCorrections] = useState<any[]>([]);
   const [correctionText, setCorrectionText] = useState('');
   const [activeTab, setActiveTab] = useState('results');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load task data from API
   useEffect(() => {
-    // This will be replaced with real API call to fetch task details
-    setTask({
-      id: taskId,
-      status: 'review',
-      createdAt: '2026-04-27 17:30',
-      updatedAt: '2026-04-27 17:45',
-    });
-    setResult(MOCK_RESULT);
-    setFiles(MOCK_FILES);
+    const loadTask = async () => {
+      try {
+        const res = await fetch(`/api/tasks/${taskId}`);
+        if (!res.ok) throw new Error('Failed to fetch task');
+        const data = await res.json();
 
-    // Load corrections
-    setCorrections([
-      {
-        id: 1,
-        message:
-          'Invoice INV-2026-0042 total should be 4850, not 4800. Recalculate from line items.',
-        createdAt: '2026-04-27 17:45',
-      },
-    ]);
+        setTask({
+          id: data.id,
+          status: data.status,
+          createdAt: new Date(data.createdAt).toLocaleString('uk-UA'),
+          updatedAt: new Date(data.updatedAt).toLocaleString('uk-UA'),
+        });
+        setResult(data.result);
+        setFiles(
+          data.files.map((f: any) => ({
+            name: f.originalName,
+            role: f.role,
+            size: `${(f.filePath || '').split('/').pop() || '—'}`,
+          })),
+        );
+        setCorrections(
+          data.corrections.map((c: any) => ({
+            id: c.id,
+            message: c.message,
+            createdAt: new Date(c.createdAt).toLocaleString('uk-UA'),
+          })),
+        );
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to load task',
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTask();
   }, [taskId]);
 
   const handleSubmitCorrection = () => {
@@ -313,15 +266,49 @@ export default function TaskDetailPage({
     // TODO: Call API to re-run task
   };
 
-  const handleDelete = () => {
-    // Delete task
-    console.log('Deleting task');
-    // TODO: Call API to delete task and redirect
-    router.push('/dashboard');
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this task?')) return;
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete task');
+      router.push('/dashboard');
+    } catch (err) {
+      alert(
+        err instanceof Error ? err.message : 'Failed to delete task',
+      );
+    }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-md max-w-md text-center">
+          <h2 className="font-semibold mb-2">Error</h2>
+          <p className="text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!task) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center text-slate-500">
+          <p className="text-lg mb-2">Task not found</p>
+          <Link href="/dashboard">
+            <Button>Back to Tasks</Button>
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -396,7 +383,23 @@ export default function TaskDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <JobsSourceTable jobs={MOCK_JOBS_SOURCE} />
+                {files.length > 0 ? (
+                  <div className="text-sm text-slate-600 space-y-2">
+                    {files.filter((f: any) => f.role === 'jobs').map((f: any) => (
+                      <div key={f.name} className="flex items-center gap-2 py-2 px-3 rounded-md bg-slate-50 border border-slate-200">
+                        <FileText className="w-4 h-4 text-slate-600" />
+                        <span className="text-slate-700">{f.name}</span>
+                      </div>
+                    ))}
+                    <p className="text-xs text-slate-400 pt-2">
+                      Parsed source data will be shown here after processing
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500 py-4 text-center">
+                    No jobs file uploaded
+                  </p>
+                )}
               </CardContent>
             </Card>
 

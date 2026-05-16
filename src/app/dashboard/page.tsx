@@ -19,19 +19,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Trash2, Eye, FileText, LogOut } from 'lucide-react';
+import { Plus, Trash2, Eye, FileText, LogOut, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
+import { TaskStatus } from '@/lib/db/enums';
 
 // ── Types ────────────────────────────────────────────────────────────────────
-
-type TaskStatus =
-  | 'uploaded'
-  | 'queued'
-  | 'processing'
-  | 'review'
-  | 'completed'
-  | 'failed';
 
 interface Task {
   id: string;
@@ -51,46 +44,6 @@ const STATUS_STYLES: Record<TaskStatus, string> = {
   failed: 'bg-red-50 text-red-700 border border-red-200',
 };
 
-// Mock tasks - replace with real API call later
-const MOCK_TASKS: Task[] = [
-  {
-    id: 'a1b2c3d4-0001',
-    status: 'completed',
-    createdAt: '2026-04-27 18:00',
-    filesCount: 4,
-  },
-  {
-    id: 'a1b2c3d4-0002',
-    status: 'review',
-    createdAt: '2026-04-27 17:30',
-    filesCount: 3,
-  },
-  {
-    id: 'a1b2c3d4-0003',
-    status: 'processing',
-    createdAt: '2026-04-27 17:00',
-    filesCount: 4,
-  },
-  {
-    id: 'a1b2c3d4-0004',
-    status: 'queued',
-    createdAt: '2026-04-27 16:45',
-    filesCount: 2,
-  },
-  {
-    id: 'a1b2c3d4-0005',
-    status: 'failed',
-    createdAt: '2026-04-27 15:00',
-    filesCount: 1,
-  },
-  {
-    id: 'a1b2c3d4-0006',
-    status: 'uploaded',
-    createdAt: '2026-04-27 14:00',
-    filesCount: 4,
-  },
-];
-
 // ── Component ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -98,17 +51,36 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<
     { label: string; status: TaskStatus; count: number }[]
   >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Load tasks from API
   useEffect(() => {
-    // This will be replaced with real API call to fetch tasks
-    setTasks(MOCK_TASKS);
-    setStats([
-      { label: 'Completed', status: 'completed', count: 12 },
-      { label: 'In Review', status: 'review', count: 3 },
-      { label: 'Processing', status: 'processing', count: 1 },
-      { label: 'Failed', status: 'failed', count: 2 },
-    ]);
+    const loadTasks = async () => {
+      try {
+        const res = await fetch('/api/tasks');
+        if (!res.ok) throw new Error('Failed to fetch tasks');
+        const data: Task[] = await res.json();
+        setTasks(data);
+
+        // Compute stats from actual data
+        const allStatuses = Object.values(TaskStatus) as TaskStatus[];
+        const computedStats = allStatuses.map((status) => ({
+          label: status.charAt(0).toUpperCase() + status.slice(1),
+          status,
+          count: data.filter((t) => t.status === status).length,
+        }));
+        setStats(computedStats);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to load tasks',
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTasks();
   }, []);
 
   return (
@@ -149,9 +121,28 @@ export default function DashboardPage() {
           </Link>
         </div>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            {error}
+          </div>
+        )}
+
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {stats.map(({ label, status, count }) => (
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} className="bg-white border-slate-200 shadow-sm">
+                  <CardHeader className="pb-1 pt-4 px-4">
+                    <CardTitle className="text-xs font-medium text-slate-400 uppercase tracking-wider">
+                      Loading...
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-slate-300" />
+                  </CardContent>
+                </Card>
+              ))
+            : stats.map(({ label, status, count }) => (
             <Card key={status} className="bg-white border-slate-200 shadow-sm">
               <CardHeader className="pb-1 pt-4 px-4">
                 <CardTitle className="text-xs font-medium text-slate-600 uppercase tracking-wider">
@@ -183,52 +174,66 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tasks.map((task) => (
-                <TableRow
-                  key={task.id}
-                  className="border-slate-200 hover:bg-slate-50"
-                >
-                  <TableCell className="font-mono text-sm text-slate-700">
-                    <Link
-                      href={`/dashboard/task/${task.id}`}
-                      className="hover:underline"
-                    >
-                      {task.id.slice(0, 8)}…
-                    </Link>
+              {loading ? (
+                <TableRow className="border-slate-200">
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-slate-300 mx-auto" />
                   </TableCell>
-                  <TableCell>
-                    <Badge className={STATUS_STYLES[task.status]}>
-                      {task.status}
-                    </Badge>
+                </TableRow>
+              ) : tasks.length === 0 ? (
+                <TableRow className="border-slate-200">
+                  <TableCell colSpan={5} className="text-center py-8 text-slate-500">
+                    No tasks yet. Create your first task!
                   </TableCell>
-                  <TableCell className="text-slate-600">
-                    {task.filesCount}
-                  </TableCell>
-                  <TableCell className="text-slate-600 text-sm">
-                    {task.createdAt}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link href={`/dashboard/task/${task.id}`}>
+                </TableRow>
+              ) : (
+                tasks.map((task) => (
+                  <TableRow
+                    key={task.id}
+                    className="border-slate-200 hover:bg-slate-50"
+                  >
+                    <TableCell className="font-mono text-sm text-slate-700">
+                      <Link
+                        href={`/dashboard/task/${task.id}`}
+                        className="hover:underline"
+                      >
+                        {task.id.slice(0, 8)}…
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={STATUS_STYLES[task.status]}>
+                        {task.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-slate-600">
+                      {task.filesCount}
+                    </TableCell>
+                    <TableCell className="text-slate-600 text-sm">
+                      {new Date(task.createdAt).toLocaleString('uk-UA')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Link href={`/dashboard/task/${task.id}`}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-slate-600 hover:text-slate-900"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </Link>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-slate-600 hover:text-slate-900"
+                          className="text-red-600 hover:text-red-700"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
-                      </Link>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </Card>

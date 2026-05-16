@@ -7,11 +7,11 @@
 Completed. Spent: 2h
   │ 2   │ Authentication                                    │ 2h       │ next-auth v5, login page, middleware, seed script                             │
 Completed. Spent: 1h. Note: Next.js 16 uses proxy.ts instead of middleware.ts
-  │ 3   │ Task management UI & API                          │ 4h       │ Create task, file upload (4 files), instructions, task list page              │                        
-  │ 4   │ Excel parsing layer                               │ 3h       │ 4 parser classes, typed interfaces, fixture files, unit tests                 │                        
+  │ 3   │ Task management UI & API                          │ 4h       │ In Progress — steps 3.1 to 3.6                                         │                        
+  │ 4   │ CSV parsing layer                               │ 3h       │ 4 parser classes, typed interfaces, fixture files, unit tests                 │                        
   │ 5   │ LLM adapter                                       │ 2h       │ Abstract class, OpenAI-compatible impl, factory, env config, mock test        │                        
   │ 6   │ LangGraph agent — core pipeline                   │ 6h       │ StateGraph, 4 node classes, edges, integration test — most complex task       │                        
-  │ 7   │ Excel output generation                           │ 4h       │ TotalSheetBuilder, ClientTemplateWriter, OutputZipper, unit tests             │                        
+  │ 7   │ CSV output generation                           │ 4h       │ TotalSheetBuilder, ClientCSVWriter, OutputZipper, unit tests             │                        
   │ 8   │ Background worker wiring                          │ 3h       │ WorkerService, polling loop, status transitions, concurrently setup           │                        
   │ 9   │ Review UI                                         │ 4h       │ Results table, flags highlighting, download, correction panel, status polling │                        
   │ 10  │ Correction node in LangGraph                      │ 3h       │ CorrectionNode, LLM prompt, result JSON update, unit tests                    │                        
