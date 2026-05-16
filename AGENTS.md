@@ -7,7 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # Application description: ./.kiro/documentation/IDEA.md  - Read it first.
 
 
-# Progress tracking: ./.kiro/documentation/TRACKING.md - Use it when you need to read or update progress.
+# Progress tracking: ./.kiro/documentation/PROGRESS.md - Use it when you need to read or update progress.
 
 # Tasks: ./.kiro/documentation/tasks/* - Use them to get task and write results of the task completion.
 
