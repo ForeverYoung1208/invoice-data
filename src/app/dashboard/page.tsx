@@ -72,16 +72,25 @@ export default function DashboardPage() {
         }));
         setStats(computedStats);
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to load tasks',
-        );
+        setError(err instanceof Error ? err.message : 'Failed to load tasks');
       } finally {
         setLoading(false);
       }
     };
 
-    loadTasks();
+    void loadTasks();
   }, []);
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this task?')) return;
+    try {
+      const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete task');
+      setTasks(tasks.filter((t) => t.id !== id));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete task');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
@@ -143,20 +152,23 @@ export default function DashboardPage() {
                 </Card>
               ))
             : stats.map(({ label, status, count }) => (
-            <Card key={status} className="bg-white border-slate-200 shadow-sm">
-              <CardHeader className="pb-1 pt-4 px-4">
-                <CardTitle className="text-xs font-medium text-slate-600 uppercase tracking-wider">
-                  {label}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-4 pb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">{count}</span>
-                  <Badge className={STATUS_STYLES[status]}>{status}</Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                <Card
+                  key={status}
+                  className="bg-white border-slate-200 shadow-sm"
+                >
+                  <CardHeader className="pb-1 pt-4 px-4">
+                    <CardTitle className="text-xs font-medium text-slate-600 uppercase tracking-wider">
+                      {label}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="px-4 pb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl font-bold">{count}</span>
+                      <Badge className={STATUS_STYLES[status]}>{status}</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
         </div>
 
         {/* Task table */}
@@ -182,7 +194,10 @@ export default function DashboardPage() {
                 </TableRow>
               ) : tasks.length === 0 ? (
                 <TableRow className="border-slate-200">
-                  <TableCell colSpan={5} className="text-center py-8 text-slate-500">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-8 text-slate-500"
+                  >
                     No tasks yet. Create your first task!
                   </TableCell>
                 </TableRow>
@@ -226,6 +241,7 @@ export default function DashboardPage() {
                           variant="ghost"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDelete(task.id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

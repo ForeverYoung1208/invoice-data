@@ -121,11 +121,11 @@ export async function POST(req: NextRequest) {
     const ds = await getGlobalDataSource();
     const taskFileRepo = ds.getRepository(TaskFile);
 
-    const uploadDir = process.env.UPLOAD_DIR;
+    const uploadDir = process.env.DATA_DIR;
 
     if (!uploadDir) {
       return NextResponse.json(
-        { error: 'UPLOAD_DIR environment variable is not set' },
+        { error: 'DATA_DIR environment variable is not set' },
         { status: 500 },
       );
     }

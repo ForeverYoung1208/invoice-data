@@ -229,9 +229,7 @@ export default function TaskDetailPage({
           })),
         );
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : 'Failed to load task',
-        );
+        setError(err instanceof Error ? err.message : 'Failed to load task');
       } finally {
         setLoading(false);
       }
@@ -273,9 +271,7 @@ export default function TaskDetailPage({
       if (!res.ok) throw new Error('Failed to delete task');
       router.push('/dashboard');
     } catch (err) {
-      alert(
-        err instanceof Error ? err.message : 'Failed to delete task',
-      );
+      alert(err instanceof Error ? err.message : 'Failed to delete task');
     }
   };
 
@@ -385,12 +381,17 @@ export default function TaskDetailPage({
               <CardContent>
                 {files.length > 0 ? (
                   <div className="text-sm text-slate-600 space-y-2">
-                    {files.filter((f: any) => f.role === 'jobs').map((f: any) => (
-                      <div key={f.name} className="flex items-center gap-2 py-2 px-3 rounded-md bg-slate-50 border border-slate-200">
-                        <FileText className="w-4 h-4 text-slate-600" />
-                        <span className="text-slate-700">{f.name}</span>
-                      </div>
-                    ))}
+                    {files
+                      .filter((f: any) => f.role === 'jobs')
+                      .map((f: any) => (
+                        <div
+                          key={f.name}
+                          className="flex items-center gap-2 py-2 px-3 rounded-md bg-slate-50 border border-slate-200"
+                        >
+                          <FileText className="w-4 h-4 text-slate-600" />
+                          <span className="text-slate-700">{f.name}</span>
+                        </div>
+                      ))}
                     <p className="text-xs text-slate-400 pt-2">
                       Parsed source data will be shown here after processing
                     </p>

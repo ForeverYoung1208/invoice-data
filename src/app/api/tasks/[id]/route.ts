@@ -50,10 +50,7 @@ export async function GET(
 
     const task = await taskService.findById(id);
     if (!task) {
-      return NextResponse.json(
-        { error: 'Task not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
     const ds = await getGlobalDataSource();
@@ -118,18 +115,12 @@ export async function DELETE(
 
     const task = await taskService.findById(id);
     if (!task) {
-      return NextResponse.json(
-        { error: 'Task not found' },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
     await taskService.delete(id);
 
-    return NextResponse.json(
-      { message: 'Task deleted' },
-      { status: 200 },
-    );
+    return NextResponse.json({ message: 'Task deleted' }, { status: 200 });
   } catch (error) {
     console.error('Error deleting task:', error);
     return NextResponse.json(

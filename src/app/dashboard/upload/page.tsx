@@ -13,14 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  FileText,
-  Upload,
-  X,
-  ChevronLeft,
-  Info,
-  Calendar,
-} from 'lucide-react';
+import { FileText, Upload, X, ChevronLeft, Info, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -56,13 +49,13 @@ const UPLOAD_SLOTS: UploadSlot[] = [
     role: 'parts',
     label: 'Parts',
     description: 'CSV with parts / line items',
-    required: false,
+    required: true,
   },
   {
     role: 'devices',
     label: 'Devices',
     description: 'CSV with device / asset data',
-    required: false,
+    required: true,
   },
 ];
 
@@ -80,9 +73,10 @@ export default function UploadPage() {
   const [uploadSlots, setUploadSlots] = useState<UploadSlot[]>(UPLOAD_SLOTS);
   const [jobRef, setJobRef] = useState(() => {
     const today = new Date();
-    return `JOB-${today.getFullYear()}-${String(
-      today.getMonth() + 1,
-    ).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}-001`;
+    return `JOB-${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+      2,
+      '0',
+    )}-${String(today.getDate()).padStart(2, '0')}-001`;
   });
   const [jobDate, setJobDate] = useState(
     new Date().toISOString().split('T')[0],
@@ -90,13 +84,105 @@ export default function UploadPage() {
   const [instructions, setInstructions] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dragActive, setDragActive] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
-  const handleFileSelect = (role: FileRole, file: File | null) => {
+  // ── Validation ─────────────────────────────────────────────────────────────
+
+  const EXPECTED_HEADERS: Record<FileRole, string[]> = {
+    jobs: [
+      '№ заявки',
+      'Дата прийому',
+      'Прізвище клієнта',
+      'Пристрій',
+      'Модель',
+      'Опис несправності',
+      'Статус',
+      'Вартість ремонт.',
+      'Примітки',
+    ],
+    clients: [
+      'ID клієнта',
+      'Прізвище та ініціали',
+      'Телефон',
+      'Email',
+      'Адреса',
+      'Тип',
+    ],
+    parts: [
+      'Артикул',
+      'Назва',
+      'Категорія',
+      'Ціна закупівлі (₴)',
+      'Ціна продажу (₴)',
+      'Наявність',
+    ],
+    devices: [
+      'Категорія',
+      'Бренд',
+      'Модель',
+      'Тип пристрою',
+      'Складність ремонту (1-5)',
+      'Час ремонту (год)',
+      'Типові запчастини',
+      'Чорний список запчастин',
+      'Примітки',
+    ],
+  };
+
+  const validateCsvHeaders = async (
+    role: FileRole,
+    file: File,
+  ): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        const firstLine = text.split('\n')[0].trim();
+        const headers = firstLine
+          .split(',')
+          .map((h) => h.replace(/"/g, '').trim());
+
+        const expected = EXPECTED_HEADERS[role];
+        const isValid =
+          expected.every((h) => headers.includes(h)) &&
+          headers.length === expected.length;
+
+        if (!isValid) {
+          setValidationError(
+            `Invalid CSV format for ${role}. Expected headers: ${expected.join(', ')}`,
+          );
+        } else {
+          setValidationError(null);
+        }
+        resolve(isValid);
+      };
+      reader.onerror = () => {
+        setValidationError(`Failed to read file for ${role}`);
+        resolve(false);
+      };
+      reader.readAsText(file.slice(0, 2048));
+    });
+  };
+
+  const handleFileSelect = async (role: FileRole, file: File | null) => {
+    if (file) {
+      const isValid = await validateCsvHeaders(role, file);
+      if (!isValid) {
+        setUploadSlots(
+          uploadSlots.map((slot) =>
+            slot.role === role ? { ...slot, file: null } : slot,
+          ),
+        );
+        return;
+      }
+    }
+
     setUploadSlots(
       uploadSlots.map((slot) =>
         slot.role === role ? { ...slot, file } : slot,
       ),
     );
+    setValidationError(null);
   };
 
   const handleDrag = (e: React.DragEvent, role: string | null) => {
@@ -120,7 +206,6 @@ export default function UploadPage() {
   };
 
   const handleSubmit = async () => {
-    // Validate required files
     const requiredSlots = uploadSlots.filter((slot) => slot.required);
     const missingFiles = requiredSlots.filter((slot) => !slot.file);
 
@@ -161,9 +246,7 @@ export default function UploadPage() {
       router.push(`/dashboard/task/${result.id}`);
     } catch (error) {
       console.error('Error creating task:', error);
-      alert(
-        error instanceof Error ? error.message : 'Failed to create task',
-      );
+      alert(error instanceof Error ? error.message : 'Failed to create task');
     } finally {
       setIsSubmitting(false);
     }
@@ -171,7 +254,6 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
-      {/* Navbar */}
       <header className="border-b border-slate-200 bg-white px-6 py-4 flex items-center gap-3 flex-shrink-0 shadow-sm">
         <Link href="/dashboard">
           <Button
@@ -193,7 +275,11 @@ export default function UploadPage() {
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8 space-y-6">
-        {/* Page title */}
+        {validationError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm font-medium">
+            {validationError}
+          </div>
+        )}
         <div>
           <h1 className="text-2xl font-bold">New Task</h1>
           <p className="text-sm text-slate-600 mt-1">
@@ -201,7 +287,6 @@ export default function UploadPage() {
           </p>
         </div>
 
-        {/* Job reference and date */}
         <Card className="bg-white border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-slate-600 font-medium">
@@ -241,7 +326,6 @@ export default function UploadPage() {
           </CardContent>
         </Card>
 
-        {/* File upload zones */}
         <Card className="bg-white border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-slate-600 font-medium flex items-center gap-2">
@@ -301,10 +385,7 @@ export default function UploadPage() {
                       className="hidden"
                       accept=".csv"
                       onChange={(e) =>
-                        handleFileSelect(
-                          slot.role,
-                          e.target.files?.[0] || null,
-                        )
+                        handleFileSelect(slot.role, e.target.files?.[0] || null)
                       }
                     />
                     <label
@@ -321,7 +402,9 @@ export default function UploadPage() {
                       <p className="text-xs text-blue-600 hover:text-blue-700">
                         Click to upload or drag and drop
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">Accepted: .csv</p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Accepted: .csv
+                      </p>
                       {slot.required && (
                         <Badge className="mt-2 text-xs bg-red-50 text-red-700 border border-red-200">
                           Required
@@ -335,7 +418,6 @@ export default function UploadPage() {
           </CardContent>
         </Card>
 
-        {/* Instructions */}
         <Card className="bg-white border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-slate-600 font-medium flex items-center gap-2">
@@ -344,10 +426,7 @@ export default function UploadPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-1.5">
-              <Label
-                htmlFor="instructions"
-                className="text-slate-700 text-sm"
-              >
+              <Label htmlFor="instructions" className="text-slate-700 text-sm">
                 Add specific instructions for this job (optional)
               </Label>
               <Textarea
@@ -361,7 +440,6 @@ export default function UploadPage() {
           </CardContent>
         </Card>
 
-        {/* Submit button */}
         <div className="flex justify-end gap-3">
           <Link href="/dashboard">
             <Button
