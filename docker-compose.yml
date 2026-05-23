@@ -2,6 +2,7 @@ x-app-base: &app-base
   image: node:22-alpine
   working_dir: /app
   environment:
+    PORT: ${PORT:-3010}
     DATABASE_URL: postgresql://invoice:invoice@postgres:5432/invoice
     AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-in-production}
     ADMIN_USER: ${ADMIN_USER:-admin}
