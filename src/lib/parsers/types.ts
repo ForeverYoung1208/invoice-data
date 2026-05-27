@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export interface JobRow {
   '№ заявки': string;
   'Дата прийому': string;

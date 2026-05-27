@@ -165,7 +165,10 @@ export async function PATCH(
       await taskService.updateInstructions(id, body.instructions);
     }
 
-    return NextResponse.json({ message: 'Task updated successfully' }, { status: 200 });
+    return NextResponse.json(
+      { message: 'Task updated successfully' },
+      { status: 200 },
+    );
   } catch (error) {
     console.error('Error updating task:', error);
     return NextResponse.json(

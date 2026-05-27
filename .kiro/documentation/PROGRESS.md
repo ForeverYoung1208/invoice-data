@@ -33,7 +33,8 @@
 
 ### 7. CSV output generation
 - **Estimate:** 4h
-- **Notes:** TotalSheetBuilder, ClientCSVWriter, OutputZipper, unit tests
+- **Notes:** TotalSheetBuilder, ClientCSVWriter, OutputZipper, unit tests.
+- **Status:** Needs Review. Fixed line-items insertion order (notes row shift bug) and added flags/warnings column to line items. All 19 tests passing.
 
 ### 8. Background worker wiring
 - **Estimate:** 3h

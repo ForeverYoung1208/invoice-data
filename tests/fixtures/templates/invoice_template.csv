@@ -1,0 +1,13 @@
+Рахунок-фактура
+Дата:,TEMPLATE_DATE,
+Клієнт:,TEMPLATE_CLIENT_NAME,
+Адреса:,TEMPLATE_CLIENT_ADDRESS,
+Телефон:,TEMPLATE_CLIENT_PHONE,
+Email:,TEMPLATE_CLIENT_EMAIL,
+
+№,Пристрій,Модель,Опис несправності,За деталь,#,Назва деталі,Категорія,Ціна продажу (₴),К-ть,Сума (₴)
+
+,,,,,,Всього:,TEMPLATE_LINE_TOTAL,
+,,,,,,Разом:,TEMPLATE_GRAND_TOTAL,
+
+Примітки: TEMPLATE_NOTES

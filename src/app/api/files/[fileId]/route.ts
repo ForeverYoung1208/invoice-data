@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { taskService } from '@/lib/container';
 import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskFile } from '@/lib/db/entities/TaskFile';
 import { join } from 'path';
@@ -39,7 +38,10 @@ export async function GET(
     const taskFile = await taskFileRepo.findOne({ where: { id: fileId } });
 
     if (!taskFile) {
-      return NextResponse.json({ error: 'File record not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'File record not found' },
+        { status: 404 },
+      );
     }
 
     // The filePath in DB is like "/uploads/filename.csv"
@@ -58,7 +60,10 @@ export async function GET(
     const absolutePath = join(uploadDir, fileName);
 
     if (!existsSync(absolutePath)) {
-      return NextResponse.json({ error: 'File not found on disk' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'File not found on disk' },
+        { status: 404 },
+      );
     }
 
     const content = await readFile(absolutePath, 'utf-8');
