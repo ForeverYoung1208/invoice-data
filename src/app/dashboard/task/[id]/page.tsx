@@ -57,7 +57,8 @@ export default function TaskDetailPage({
           createdAt: new Date(data.createdAt).toLocaleString('uk-UA'),
           updatedAt: new Date(data.updatedAt).toLocaleString('uk-UA'),
         });
-        const latestResult = data.results && data.results.length > 0 ? data.results[0] : null;
+        const latestResult =
+          data.results && data.results.length > 0 ? data.results[0] : null;
         setResult(latestResult ? latestResult.resultJson : null);
         setFiles(
           data.files.map((f: any) => ({
@@ -81,12 +82,12 @@ export default function TaskDetailPage({
       }
     };
 
-    loadTask();
+    void loadTask();
   }, [taskId]);
 
   const handleSubmitCorrection = async () => {
     if (!correctionText.trim()) return;
-    
+
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
@@ -99,7 +100,7 @@ export default function TaskDetailPage({
       // Refresh task data to show new correction
       const refreshRes = await fetch(`/api/tasks/${taskId}`);
       const data = await refreshRes.json();
-      
+
       setCorrections(
         data.corrections.map((c: any) => ({
           id: c.id,
@@ -172,7 +173,7 @@ export default function TaskDetailPage({
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
-      </div >
+      </div>
     );
   }
 
@@ -182,8 +183,8 @@ export default function TaskDetailPage({
         <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-md max-w-md text-center">
           <h2 className="font-semibold mb-2">Error</h2>
           <p className="text-sm">{error}</p>
-        </div >
-      </div >
+        </div>
+      </div>
     );
   }
 
@@ -195,12 +196,12 @@ export default function TaskDetailPage({
           <Link href="/dashboard">
             <Button>Back to Tasks</Button>
           </Link>
-        </div >
-      </div >
+        </div>
+      </div>
     );
   }
 
-  const jobsFile = files.find(f => f.role === 'jobs');
+  const jobsFile = files.find((f) => f.role === 'jobs');
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
@@ -218,11 +219,11 @@ export default function TaskDetailPage({
         <div className="flex items-center gap-2">
           <div className="bg-blue-50 p-2 rounded-full ring-1 ring-blue-200">
             <FileText className="w-5 h-5 text-blue-600" />
-          </div >
+          </div>
           <span className="text-lg font-semibold tracking-tight">
             InvoiceApp
           </span>
-        </div >
+        </div>
       </header>
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8 space-y-6">
@@ -279,7 +280,7 @@ export default function TaskDetailPage({
             <CorrectionForm
               correctionText={correctionText}
               setCorrectionText={setCorrectionText}
-              onSubmit={handleSubmitCorrection}
+              onSubmit={() => void handleSubmitCorrection()}
             />
           </TabsContent>
 
@@ -296,10 +297,10 @@ export default function TaskDetailPage({
 
       {/* Bottom action bar */}
       <TaskFooter
-        onDelete={handleDelete}
-        onReRun={handleReRun}
-        onApprove={handleApprove}
+        onDelete={() => void handleDelete()}
+        onReRun={() => void handleReRun()}
+        onApprove={() => void handleApprove()}
       />
-    </div >
+    </div>
   );
 }

@@ -17,24 +17,25 @@
 
 ### 3. Task management UI & API
 - **Estimate:** 4h
-- **Notes:** Completed. Spent: 6h
+- **Status:** Completed. Spent: 6h
 
 ### 4. CSV parsing layer
 - **Estimate:** 3h
-- **Notes:** Completed. Spent: 1.5h
+- **Status:** Completed. Spent: 1.5h
 
 ### 5. LLM adapter
 - **Estimate:** 2h
-- **Notes:** Completed. Spent: 1.5h
+- **Status:** Completed. Spent: 1.5h
 
 ### 6. LangGraph agent — core pipeline
 - **Estimate:** 6h
 - **Notes:** StateGraph, 4 node classes, edges, integration test — most complex task
+- **Satus** In progress. Already spent 4 hours (state on 28.05.2026);
 
 ### 7. CSV output generation
 - **Estimate:** 4h
 - **Notes:** TotalSheetBuilder, ClientCSVWriter, OutputZipper, unit tests.
-- **Status:** Needs Review. Fixed line-items insertion order (notes row shift bug) and added flags/warnings column to line items. All 19 tests passing.
+- **Status:** Completed. Spent: 4h
 
 ### 8. Background worker wiring
 - **Estimate:** 3h

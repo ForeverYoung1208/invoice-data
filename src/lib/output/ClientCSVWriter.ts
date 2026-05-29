@@ -140,8 +140,10 @@ export class ClientCSVWriter {
         if (part.isUncertain) {
           note += '⚠️ Невпевнено';
         }
-        if (part.isWarning) {
+        if (part.warningLevel === 1) {
           note += (note ? '; ' : '') + '❌ Несумісність';
+        } else if (part.warningLevel === 0.5) {
+          note += (note ? '; ' : '') + '⚠️ Не рекомендовано';
         }
         if (part.comment) {
           note += (note ? '; ' : '') + part.comment;

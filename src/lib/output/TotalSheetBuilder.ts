@@ -227,7 +227,12 @@ export class TotalSheetBuilder {
       } else {
         for (const part of job.matchedParts) {
           const flag = part.isUncertain ? '⚠️ Невпевнено' : '';
-          const warning = part.isWarning ? '❌ Несумісність' : '';
+          const warning =
+            part.warningLevel === 1
+              ? '❌ Несумісність'
+              : part.warningLevel === 0.5
+                ? '⚠️ Не рекомендовано'
+                : '';
           rows.push(
             this.jobRow(
               job,

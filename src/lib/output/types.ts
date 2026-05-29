@@ -26,8 +26,8 @@ export interface MatchedPart {
   /** Whether the LLM was uncertain about this match */
   isUncertain: boolean;
 
-  /** Whether this part is incompatible with the repaired device */
-  isWarning: boolean;
+  /** Warning level (0 = none, 0.5 = not recommended, 1 = blacklisted/incompatible) */
+  warningLevel: number;
 
   /** Reason for flag / warning (empty if none) */
   comment?: string;

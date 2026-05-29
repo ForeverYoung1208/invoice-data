@@ -73,7 +73,7 @@ describe('OutputZipper', () => {
             price: 380,
             quantity: 1,
             isUncertain: false,
-            isWarning: false,
+            warningLevel: 0,
           },
         ],
         flags: [],

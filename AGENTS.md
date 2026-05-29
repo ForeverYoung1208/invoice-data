@@ -4,6 +4,9 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# **THIS IS EDUCATIONAL PROJECT** Explain your decisions, patterns, mechanisms regarding next.js and landggrah functionality
+User has experience with nest.js and react.js applications and uses this project to study and learn next.js and langGraph usage patterns and best practices. So provide user with explanations of basics of next.js, langGraph interfaces, usage patterns/cases  and architecture decisions.
+
 # Application description: ./.kiro/documentation/IDEA.md  - Read it first.
 
 
