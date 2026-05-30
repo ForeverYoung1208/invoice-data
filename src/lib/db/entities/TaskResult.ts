@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import type { Task } from './Task';
+import { TResultJsonDto } from '../../contracts/schemas/task.schema';
 
 @Entity('task_results')
 export class TaskResult {
@@ -16,7 +17,7 @@ export class TaskResult {
   id: string;
 
   @Column({ type: 'jsonb' })
-  resultJson: object;
+  resultJson: TResultJsonDto;
 
   @Column({ type: 'text', nullable: true })
   zipPath: string | null;

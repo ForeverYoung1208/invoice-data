@@ -1,7 +1,7 @@
 ### Task 5.1: Refactor task-detail UI data flow with TanStack Query
 
 - **Objective:** Replace manual `useEffect`/`useState` server-data fetching on the task detail screen with TanStack Query, centralize CSV file loading/parsing, and remove tab-order-dependent data behavior before implementing the LangGraph pipeline.
-- **Implementation:** Add the TanStack Query provider at the application/client boundary, introduce typed query helpers for task detail and task file content, refactor `/dashboard/task/[id]` so task metadata, files, results, and corrections come from query state, and make the Results and Files tabs share cached file data through stable query keys.
+- **Implementation:** Add the TanStack Query provider at the application/client boundary, introduce shared Zod-backed API DTO contracts and typed query helpers for task detail and task file content, refactor `/dashboard/task/[id]` so task metadata, files, results, and corrections come from query state, and make the Results and Files tabs share cached file data through stable query keys.
 - **Demo:** Opening an existing task directly on the Results tab shows the jobs source data without requiring the user to visit the Files tab first. Visiting Files first or Results first produces the same loaded data, with no duplicate ownership of file content state.
 
 ---
@@ -86,7 +86,23 @@ Do not store server-derived data in local state unless there is a specific optim
 
 ---
 
-### Subtask 5.1.3 — Choose one file-content API contract
+### Subtask 5.1.3 — Add shared Zod API DTO contracts
+
+**Goal:** Keep backend route responses and frontend fetch helpers aligned with the same validated API contract.
+
+**What to do:**
+
+- Define shared Zod schemas for task-detail and task-file responses in a client-safe contract module.
+- Infer TypeScript DTO types from those schemas instead of manually duplicating matching interfaces.
+- Validate route-handler response payloads before returning JSON where practical.
+- Validate `fetchTaskDetail(taskId)` and `fetchTaskFileRows(taskId, fileId)` responses after `res.json()`.
+- Add schemas incrementally alongside API development instead of treating validation as a separate later task.
+
+**Why:** TypeScript checks only the code being compiled; it does not prove that JSON crossing an HTTP boundary has the expected shape. Zod makes the API boundary explicit and catches drift such as misspelled fields, missing dates, wrong enum values, or changed nested result structures.
+
+---
+
+### Subtask 5.1.4 — Choose one file-content API contract
 
 **Goal:** Remove duplicated file loading/parsing behavior.
 
@@ -101,7 +117,7 @@ Do not store server-derived data in local state unless there is a specific optim
 
 ---
 
-### Subtask 5.1.4 — Refactor task detail page
+### Subtask 5.1.5 — Refactor task detail page
 
 **Goal:** Replace manual task-detail fetching with a single task query.
 
@@ -117,7 +133,7 @@ Do not store server-derived data in local state unless there is a specific optim
 
 ---
 
-### Subtask 5.1.5 — Refactor Results tab source data loading
+### Subtask 5.1.6 — Refactor Results tab source data loading
 
 **Goal:** Make source jobs data load independently of tab navigation order.
 
@@ -132,7 +148,7 @@ Do not store server-derived data in local state unless there is a specific optim
 
 ---
 
-### Subtask 5.1.6 — Refactor Files tab file loading
+### Subtask 5.1.7 — Refactor Files tab file loading
 
 **Goal:** Make all file previews use the same file-content query cache.
 
@@ -147,7 +163,7 @@ Do not store server-derived data in local state unless there is a specific optim
 
 ---
 
-### Subtask 5.1.7 — Add mutation invalidation
+### Subtask 5.1.8 — Add mutation invalidation
 
 **Goal:** Make task mutations refresh related server state consistently.
 
@@ -162,7 +178,7 @@ Do not store server-derived data in local state unless there is a specific optim
 
 ---
 
-### Subtask 5.1.8 — Verify behavior
+### Subtask 5.1.9 — Verify behavior
 
 **Goal:** Confirm the refactor fixes the observed tab-order issue and does not regress task-detail UI behavior.
 
@@ -202,6 +218,8 @@ In Next.js App Router terms:
 
 - Task detail page no longer manually loads task server data with `useEffect`.
 - Task detail server data is loaded through TanStack Query.
+- Task-detail and task-file API contracts are represented by shared Zod schemas with inferred DTO types.
+- Client fetch helpers validate JSON responses before returning data to TanStack Query.
 - Results tab loads jobs source data on first render when a jobs file exists.
 - Files tab and Results tab share the same file-content query key strategy.
 - CSV parsing is not duplicated between `JobsSourceDataView` and `FilesTab`.

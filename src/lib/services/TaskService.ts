@@ -1,12 +1,14 @@
 import { getGlobalDataSource } from '../db/dataSource';
 import { Task } from '../db/entities/Task';
-import { TaskStatus } from '../db/enums';
+import { ETaskStatus } from '../db/enums';
 import { CorrectionLog } from '../db/entities/CorrectionLog';
 
 export class TaskService {
   async create(): Promise<Task> {
     const ds = await getGlobalDataSource();
-    const task = ds.getRepository(Task).create({ status: TaskStatus.UPLOADED });
+    const task = ds
+      .getRepository(Task)
+      .create({ status: ETaskStatus.UPLOADED });
     return ds.getRepository(Task).save(task);
   }
 
@@ -25,7 +27,7 @@ export class TaskService {
 
   async updateStatus(
     id: string,
-    status: TaskStatus,
+    status: ETaskStatus,
     errorMessage?: string,
   ): Promise<void> {
     const ds = await getGlobalDataSource();

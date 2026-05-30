@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskService } from '@/lib/services/TaskService';
-import { TaskStatus } from '@/lib/db/enums';
+import { ETaskStatus } from '@/lib/db/enums';
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -16,19 +16,19 @@ class WorkerService {
         .createQueryBuilder()
         .select('task')
         .from('tasks', 'task')
-        .where('task.status = :status', { status: TaskStatus.QUEUED })
+        .where('task.status = :status', { status: ETaskStatus.QUEUED })
         .setLock('pessimistic_write_or_fail')
         .getOne();
 
       if (!task) return;
 
-      await em.update('tasks', task.id, { status: TaskStatus.PROCESSING });
+      await em.update('tasks', task.id, { status: ETaskStatus.PROCESSING });
       console.log(`[worker] picked up task ${task.id}`);
 
       // TODO: invoke InvoiceAgent (Task 6)
       await this.taskService.updateStatus(
         task.id,
-        TaskStatus.FAILED,
+        ETaskStatus.FAILED,
         'Agent not yet implemented',
       );
     });

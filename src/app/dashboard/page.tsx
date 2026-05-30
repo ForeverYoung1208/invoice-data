@@ -22,20 +22,20 @@ import {
 import { Plus, Trash2, Eye, FileText, LogOut, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
-import { TaskStatus } from '@/lib/db/enums';
+import { ETaskStatus } from '@/lib/db/enums';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface Task {
   id: string;
-  status: TaskStatus;
+  status: ETaskStatus;
   createdAt: string;
   filesCount: number;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<TaskStatus, string> = {
+const STATUS_STYLES: Record<ETaskStatus, string> = {
   uploaded: 'bg-slate-100 text-slate-700 border border-slate-300',
   queued: 'bg-blue-50 text-blue-700 border border-blue-200',
   processing: 'bg-amber-50 text-amber-700 border border-amber-200',
@@ -49,7 +49,7 @@ const STATUS_STYLES: Record<TaskStatus, string> = {
 export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [stats, setStats] = useState<
-    { label: string; status: TaskStatus; count: number }[]
+    { label: string; status: ETaskStatus; count: number }[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +64,7 @@ export default function DashboardPage() {
         setTasks(data);
 
         // Compute stats from actual data
-        const allStatuses = Object.values(TaskStatus) as TaskStatus[];
+        const allStatuses = Object.values(ETaskStatus) as ETaskStatus[];
         const computedStats = allStatuses.map((status) => ({
           label: status.charAt(0).toUpperCase() + status.slice(1),
           status,

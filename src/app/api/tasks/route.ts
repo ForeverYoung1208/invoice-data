@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { taskService } from '@/lib/container';
 import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskFile } from '@/lib/db/entities/TaskFile';
-import { TaskFileRole } from '@/lib/db/enums';
+import { ETaskFileRole } from '@/lib/db/enums';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
@@ -136,10 +136,10 @@ export async function POST(req: NextRequest) {
     }
 
     const filesToSave = [
-      { file: jobsFile, role: TaskFileRole.JOBS },
-      { file: clientsFile, role: TaskFileRole.CLIENTS },
-      { file: partsFile, role: TaskFileRole.PARTS },
-      { file: devicesFile, role: TaskFileRole.DEVICES },
+      { file: jobsFile, role: ETaskFileRole.JOBS },
+      { file: clientsFile, role: ETaskFileRole.CLIENTS },
+      { file: partsFile, role: ETaskFileRole.PARTS },
+      { file: devicesFile, role: ETaskFileRole.DEVICES },
     ];
 
     for (const { file, role } of filesToSave) {

@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TabsContent } from '@/components/ui/tabs';
-import { FileText, Table as TableIcon, Loader2 } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { ROLE_COLORS } from './constants';
 import {
   Table,
@@ -14,6 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useQueries } from '@tanstack/react-query';
+import { fetchTaskFileRows } from '../../../lib/client/task-detail-api';
 
 interface FileItem {
   id: string;
@@ -24,102 +25,35 @@ interface FileItem {
 
 interface FilesTabProps {
   files: FileItem[];
+  taskId: string;
 }
 
-export function FilesTab({ files }: FilesTabProps) {
-  const [contents, setContents] = useState<Record<string, any[]>>({});
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
-
-  useEffect(() => {
-    const fetchAllContents = async () => {
-      if (files.length === 0) return;
-      setLoading(true);
-      const newContents: Record<string, any[]> = {};
-      const newErrors: Record<string, string | null> = {};
-
-      await Promise.all(
-        files.map(async (file) => {
-          try {
-            const res = await fetch(`/api/files/${file.id}`);
-            if (!res.ok) throw new Error('Failed to fetch content');
-            const data = await res.json();
-
-            const parsed = parseCSV(data.content);
-            newContents[file.id] = parsed;
-          } catch (err) {
-            newErrors[file.id] =
-              err instanceof Error ? err.message : 'Failed to load content';
-          }
-        }),
-      );
-
-      setContents(newContents);
-      setErrors(newErrors);
-      setLoading(false);
-    };
-
-    void fetchAllContents();
-  }, [files]);
-
-  const parseCSV = (text: string) => {
-    const lines = text.trim().split(/\r?\n/);
-    if (lines.length === 0) return [];
-
-    const parseLine = (line: string) => {
-      const result: string[] = [];
-      let current = '';
-      let inQuotes = false;
-
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === '"') {
-          // Handle escaped quotes ""
-          if (inQuotes && line[i + 1] === '"') {
-            current += '"';
-            i++; // skip next quote
-          } else {
-            inQuotes = !inQuotes;
-          }
-        } else if (char === ',' && !inQuotes) {
-          result.push(current.trim());
-          current = '';
-        } else {
-          current += char;
-        }
-      }
-      result.push(current.trim());
-      return result;
-    };
-
-    const headers = parseLine(lines[0]);
-
-    return lines
-      .slice(1)
-      .map((line) => {
-        if (!line.trim()) return null;
-        const values = parseLine(line);
-        const obj: any = {};
-        headers.forEach((header, i) => {
-          obj[header] = values[i] !== undefined ? values[i] : '';
-        });
-        return obj;
-      })
-      .filter(Boolean);
-  };
-
-  const selectedFileId = files.length > 0 ? files[0].id : null; // Not actually used anymore, showing all
+export function FilesTab({ files, taskId }: FilesTabProps) {
+  const fileQueries = useQueries({
+    queries: files.map((file) => ({
+      queryKey: ['task-file', taskId, file.id],
+      queryFn: () => fetchTaskFileRows(taskId, file.id),
+    })),
+  });
+  const isAllLoading = fileQueries.some((fq) => fq.isLoading);
 
   return (
     <TabsContent value="files" className="mt-4 space-y-8">
-      {loading && (
+      {isAllLoading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
         </div>
       )}
 
-      {!loading &&
-        files.map((file) => (
+      {files.map((file, index) => {
+        const {
+          data: contents,
+          error,
+          isLoading,
+          isError,
+        } = fileQueries[index];
+
+        return (
           <Card key={file.id} className="bg-white border-slate-200 shadow-sm">
             <CardHeader className="pb-3 border-b border-slate-100">
               <div className="flex items-center justify-between">
@@ -136,16 +70,20 @@ export function FilesTab({ files }: FilesTabProps) {
               </div>
             </CardHeader>
             <CardContent className="pt-4">
-              {errors[file.id] ? (
-                <div className="text-center py-8 text-red-500 text-sm">
-                  {errors[file.id]}
+              {isLoading ? (
+                <div className="text-center py-8 text-slate-400 text-sm">
+                  Loading...
                 </div>
-              ) : contents[file.id] && contents[file.id].length > 0 ? (
+              ) : isError ? (
+                <div className="text-center py-8 text-red-500 text-sm">
+                  {error?.message || 'Unknown error'}
+                </div>
+              ) : contents && contents.length > 0 ? (
                 <div className="rounded-md border border-slate-200 overflow-hidden">
                   <Table>
                     <TableHeader className="bg-slate-50">
                       <TableRow>
-                        {Object.keys(contents[file.id][0]).map((header) => (
+                        {Object.keys(contents[0]).map((header) => (
                           <TableHead
                             key={header}
                             className="text-xs text-slate-600 whitespace-nowrap"
@@ -156,7 +94,7 @@ export function FilesTab({ files }: FilesTabProps) {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {contents[file.id].map((row, i) => (
+                      {contents.map((row, i) => (
                         <TableRow key={i}>
                           {Object.values(row).map((val: any, j) => (
                             <TableCell
@@ -178,7 +116,8 @@ export function FilesTab({ files }: FilesTabProps) {
               )}
             </CardContent>
           </Card>
-        ))}
+        );
+      })}
     </TabsContent>
   );
 }

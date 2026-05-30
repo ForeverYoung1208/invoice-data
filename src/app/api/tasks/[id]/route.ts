@@ -4,6 +4,10 @@ import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskFile } from '@/lib/db/entities/TaskFile';
 import { TaskResult } from '@/lib/db/entities/TaskResult';
 import { CorrectionLog } from '@/lib/db/entities/CorrectionLog';
+import {
+  taskDetailSchema,
+  TTaskDetailDto,
+} from '../../../../lib/contracts/schemas/task.schema';
 
 /**
  * @swagger
@@ -75,7 +79,7 @@ import { CorrectionLog } from '@/lib/db/entities/CorrectionLog';
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
 
@@ -98,36 +102,37 @@ export async function GET(
       }),
     ]);
 
-    return NextResponse.json(
-      {
-        id: task.id,
-        status: task.status,
-        instructions: task.instructions ?? null,
-        errorMessage: task.errorMessage ?? null,
-        createdAt: task.createdAt.toISOString(),
-        updatedAt: task.updatedAt.toISOString(),
-        files: files.map((f) => ({
-          id: f.id,
-          role: f.role,
-          filePath: f.filePath,
-          originalName: f.originalName,
-          createdAt: f.createdAt.toISOString(),
-        })),
-        results: results.map((r) => ({
-          id: r.id,
-          resultJson: r.resultJson,
-          zipPath: r.zipPath ?? null,
-          createdAt: r.createdAt.toISOString(),
-        })),
-        corrections: corrections.map((c) => ({
-          id: c.id,
-          message: c.message,
-          resultSnapshotBefore: c.resultSnapshotBefore,
-          createdAt: c.createdAt.toISOString(),
-        })),
-      },
-      { status: 200 },
-    );
+    const taskDetail: TTaskDetailDto = {
+      id: task.id,
+      status: task.status,
+      instructions: task.instructions ?? null,
+      errorMessage: task.errorMessage ?? null,
+      createdAt: task.createdAt.toISOString(),
+      updatedAt: task.updatedAt.toISOString(),
+      files: files.map((f) => ({
+        id: f.id,
+        role: f.role,
+        filePath: f.filePath,
+        originalName: f.originalName,
+        createdAt: f.createdAt.toISOString(),
+      })),
+      results: results.map((r) => ({
+        id: r.id,
+        resultJson: r.resultJson,
+        zipPath: r.zipPath ?? null,
+        createdAt: r.createdAt.toISOString(),
+      })),
+      corrections: corrections.map((c) => ({
+        id: c.id,
+        message: c.message,
+        resultSnapshotBefore: c.resultSnapshotBefore ?? null,
+        createdAt: c.createdAt.toISOString(),
+      })),
+    };
+
+    return NextResponse.json(taskDetailSchema.parse(taskDetail), {
+      status: 200,
+    });
   } catch (error) {
     console.error('Error fetching task:', error);
     return NextResponse.json(
@@ -140,7 +145,7 @@ export async function GET(
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
     const body = await req.json();
@@ -181,7 +186,7 @@ export async function PATCH(
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
-) {
+): Promise<NextResponse> {
   try {
     const { id } = await params;
 

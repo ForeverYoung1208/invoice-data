@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { TaskFileRole } from '../enums';
+import { ETaskFileRole } from '../enums';
 
 import type { Task } from './Task';
 
@@ -16,8 +16,8 @@ export class TaskFile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'enum', enum: TaskFileRole })
-  role: TaskFileRole;
+  @Column({ type: 'enum', enum: ETaskFileRole })
+  role: ETaskFileRole;
 
   @Column({ type: 'varchar', length: 2048 })
   filePath: string;

@@ -27,6 +27,11 @@
 - **Estimate:** 2h
 - **Status:** Completed. Spent: 1.5h
 
+### 5.1. Refactor task-detail UI data flow with TanStack Query
+- **Estimate:** 0h (unexpected refactoring)
+- **Notes:** Refactored task-detail UI to use TanStack Query for data fetching and caching, used as next.js and tanStack learning material;
+- **Status:** Completed. Spent: 8h
+
 ### 6. LangGraph agent — core pipeline
 - **Estimate:** 6h
 - **Notes:** StateGraph, 4 node classes, edges, integration test — most complex task

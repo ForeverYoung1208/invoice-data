@@ -26,10 +26,7 @@ export function CorrectionForm({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="space-y-1.5">
-          <Label
-            htmlFor="correction"
-            className="text-slate-700 text-sm"
-          >
+          <Label htmlFor="correction" className="text-slate-700 text-sm">
             Describe what needs to be fixed
           </Label>
           <Textarea
@@ -47,8 +44,7 @@ export function CorrectionForm({
           onClick={onSubmit}
           disabled={!correctionText.trim()}
         >
-          <MessageSquarePlus className="w-3.5 h-3.5" /> Submit
-          Correction
+          <MessageSquarePlus className="w-3.5 h-3.5" /> Submit Correction
         </Button>
       </CardContent>
     </Card>

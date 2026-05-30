@@ -1,4 +1,4 @@
-export enum TaskStatus {
+export enum ETaskStatus {
   UPLOADED = 'uploaded',
   QUEUED = 'queued',
   PROCESSING = 'processing',
@@ -7,7 +7,7 @@ export enum TaskStatus {
   FAILED = 'failed',
 }
 
-export enum TaskFileRole {
+export enum ETaskFileRole {
   JOBS = 'jobs',
   CLIENTS = 'clients',
   PARTS = 'parts',

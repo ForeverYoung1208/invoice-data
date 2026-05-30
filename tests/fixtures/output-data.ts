@@ -2,7 +2,7 @@
  * Fixture data for output generation tests.
  */
 
-import type { OutputData, ClientRow, MatchedPart, MatchedJob } from '@/lib/output/types';
+import type { OutputData } from '@/lib/output/types';
 
 /**
  * Create a sample OutputData fixture from the mock data.
@@ -127,14 +127,16 @@ export function createOutputDataFixture(): OutputData {
  * Create a sample clients CSV content for testing.
  */
 export function createClientsCsvContent(): string {
-  return [
-    'ID клієнта,Прізвище та ініціали,Телефон,Email,Адреса,Тип',
-    'КЛ-001,Коваленко Олександр Вячеславович,+380631234567,kovalenko@email.ua,"м. Київ, вул. Хрещатик, 22, кв. 15",Фізична особа',
-    'КЛ-002,Шевченко Ірина Миколаївна,+380998765432,shevchenko.i@gmail.com,"м. Київ, пр. Перемоги, 45, кв. 8",Фізична особа',
-    'КЛ-003,Бондар Тарас Олегович,+380501112233,bondar.t@ukr.net,"м. Київ, вул. Лєскова, 10",Фізична особа',
-    'КЛ-004,"ТОВ ""ТехноСтарт""",+380442223344,info@techstart.ua,"м. Київ, бул. Лесі Українки, 12, офіс 301",Юридична особа',
-    'КЛ-005,Мельник Дмитро Костянтинович,+380674445566,melnyk.d@outlook.com,"м. Київ, вул. Січових Стрільців, 33, кв. 7",Фізична особа',
-  ].join('\n') + '\n';
+  return (
+    [
+      'ID клієнта,Прізвище та ініціали,Телефон,Email,Адреса,Тип',
+      'КЛ-001,Коваленко Олександр Вячеславович,+380631234567,kovalenko@email.ua,"м. Київ, вул. Хрещатик, 22, кв. 15",Фізична особа',
+      'КЛ-002,Шевченко Ірина Миколаївна,+380998765432,shevchenko.i@gmail.com,"м. Київ, пр. Перемоги, 45, кв. 8",Фізична особа',
+      'КЛ-003,Бондар Тарас Олегович,+380501112233,bondar.t@ukr.net,"м. Київ, вул. Лєскова, 10",Фізична особа',
+      'КЛ-004,"ТОВ ""ТехноСтарт""",+380442223344,info@techstart.ua,"м. Київ, бул. Лесі Українки, 12, офіс 301",Юридична особа',
+      'КЛ-005,Мельник Дмитро Костянтинович,+380674445566,melnyk.d@outlook.com,"м. Київ, вул. Січових Стрільців, 33, кв. 7",Фізична особа',
+    ].join('\n') + '\n'
+  );
 }
 
 /**

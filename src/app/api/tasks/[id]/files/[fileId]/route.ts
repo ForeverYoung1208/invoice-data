@@ -94,9 +94,9 @@ export async function GET(
     };
 
     const headers = parseLine(lines[0]);
-    const data = lines.slice(1).map((line) => {
+    const data: Record<string, string>[] = lines.slice(1).map((line) => {
       const values = parseLine(line);
-      const obj: Record<string, any> = {};
+      const obj: Record<string, string> = {};
       headers.forEach((header, index) => {
         obj[header] = values[index] ?? '';
       });

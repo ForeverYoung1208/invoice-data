@@ -16,13 +16,13 @@ User has experience with nest.js and react.js applications and uses this project
 
  
 # For Code style rules see file .kiro/steering/CODESTYLE.md
-Before making any changes check that you read code style file and follow it.
+** Before making any changes check `.kiro/steering/CODESTYLE.md`  file and follow it.**
 
 ## Project Structure Overview
 
 The project follows a typical Next.js/TypeORM structure with the following key directories:
 
-### 📁 `src/`
+### `src/`
 **Core application code**
 - `app/`
   - `api/`
@@ -43,36 +43,36 @@ The project follows a typical Next.js/TypeORM structure with the following key d
     - `migrations/` (database migration files)
   - `services/` (business logic/services)
 
-### 📁 `tests/`
+### `tests/`
 **Test suite**
 - Contains Playwright and Jest test files
 - Organized by feature (task detail, file upload, task list)
 - Includes test data and fixtures
 
-### 📁 `worker/`
+### `worker/`
 **Background processing**
 - Contains worker service implementation
 - Polling loop and status management
 - Integration with task processing system
 
-### 📁 `public/`
+### `public/`
 **Static assets**
 - Contains static files served by Next.js
 
-### 📁 `docker/`
+### `docker/`
 **Infrastructure**
 - Docker Compose configuration
 - Postgres data volume setup
 - Application service definitions
 
-### 📄 Configuration Files
+### Configuration Files
 - `.env.example` - Environment variable template
 - `docker-compose.yml` - Container orchestration
 - `package.json` - Project dependencies and scripts
 - `tsconfig.json` - TypeScript configuration
 - `next.config.js` - Next.js configuration
 
-### 🧪 Testing Infrastructure
+### Testing Infrastructure
 - `playwright.config.ts` - Playwright configuration
 - `jest.config.ts` - Jest configuration
 - `tests/` directory contains:
@@ -81,34 +81,11 @@ The project follows a typical Next.js/TypeORM structure with the following key d
   - API tests
   - Component tests
 
-### 📁 `node_modules/`
-**Dependencies**
-- Contains all npm packages
-- Includes Next.js, TypeORM, NextAuth.js, and other dependencies
-
- 
 # Key Procedures
 ## Run the Application
-
-Use the following command to start the development server:
-```bash
-npm run app:dev > dev.log 2>&1 &
-
-> **Note:** This non-blocking startup with log capture is required for AI agents to maintain continuous operation and enable real-time monitoring through `dev.log`
-```
-
-This runs both the Next.js server and the worker process concurrently. Ensure Docker is running and the required environment variables are set.
-
-### Start Application
-Application could be already started by the user (check localhost:3000)
-If application isn't started use the following command to start the development server:
-```bash
-npm run app:dev > dev.log 2>&1 &
-
-> **Note:** This non-blocking startup with log capture is required for AI agents to maintain continuous operation and enable real-time monitoring through `dev.log`
-```
-
-This runs both the Next.js server and the worker process concurrently. Ensure Docker is running and the required environment variables are set.
+**Note:** Application could be already started by the user (check localhost:3000)
+use `docker compose` to start application containers,
+see `docker-compose.yml` for container configuration details.
 
 
 ## Searching for files, patterns, etc
@@ -152,24 +129,5 @@ npm run db:seed
   - `ADMIN_USER` and `ADMIN_PASSWORD`: Default admin credentials
   - `LLM_*` variables: Configure the LLM provider (LiteLLM for dev, Bedrock for prod)
 
-```bash
-docker compose up
-```
-
-This sets up the application with Postgres and binds the necessary volumes.
-
-
 ## Build and Test
-- Linting:
-  ```bash
-  npm run lint
-  ```
-- Production build:
-  ```bash
-  npm run build
-  ```
-- Start in production mode:
-  ```bash
-  npm start
-  ```
-
+see package.json for available scripts

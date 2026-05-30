@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 
 import type { Task } from './Task';
+import { TResultJsonDto } from '../../contracts/schemas/task.schema';
 
 @Entity('correction_logs')
 export class CorrectionLog {
@@ -18,7 +19,7 @@ export class CorrectionLog {
   message: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  resultSnapshotBefore: object | null;
+  resultSnapshotBefore: TResultJsonDto | null;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, ChevronLeft, Loader2 } from 'lucide-react';
-import { useState, useEffect, use } from 'react';
+import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -23,6 +23,12 @@ import { FilesTab } from '@/components/dashboard/task-detail/files-tab';
 import { CorrectionsTab } from '@/components/dashboard/task-detail/corrections-tab';
 import { InstructionsTab } from '@/components/dashboard/task-detail/instructions-tab';
 import { TaskFooter } from '@/components/dashboard/task-detail/task-footer';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { fetchTaskDetail } from '@/lib/client/task-detail-api';
+import dayjs from 'dayjs';
+import { TTaskUpdateDto } from '@/lib/contracts/schemas/task.schema';
+import { DATE_TIME_FORMAT } from '@/lib/constants';
+import { ETaskFileRole, ETaskStatus } from '../../../../lib/db/enums';
 
 export default function TaskDetailPage({
   params,
@@ -34,128 +40,70 @@ export default function TaskDetailPage({
   const { id: taskId } = use(params);
 
   const router = useRouter();
-  const [task, setTask] = useState<any>(null);
-  const [result, setResult] = useState<any>(null);
-  const [files, setFiles] = useState<any[]>([]);
-  const [corrections, setCorrections] = useState<any[]>([]);
   const [correctionText, setCorrectionText] = useState('');
   const [activeTab, setActiveTab] = useState('results');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Load task data from API
-  useEffect(() => {
-    const loadTask = async () => {
-      try {
-        const res = await fetch(`/api/tasks/${taskId}`);
-        if (!res.ok) throw new Error('Failed to fetch task');
-        const data = await res.json();
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['task', taskId],
+    queryFn: () => fetchTaskDetail(taskId),
+  });
 
-        setTask({
-          id: data.id,
-          status: data.status,
-          createdAt: new Date(data.createdAt).toLocaleString('uk-UA'),
-          updatedAt: new Date(data.updatedAt).toLocaleString('uk-UA'),
-        });
-        const latestResult =
-          data.results && data.results.length > 0 ? data.results[0] : null;
-        setResult(latestResult ? latestResult.resultJson : null);
-        setFiles(
-          data.files.map((f: any) => ({
-            id: f.id,
-            name: f.originalName,
-            role: f.role,
-            size: `${(f.filePath || '').split('/').pop() || '—'}`,
-          })),
-        );
-        setCorrections(
-          data.corrections.map((c: any) => ({
-            id: c.id,
-            message: c.message,
-            createdAt: new Date(c.createdAt).toLocaleString('uk-UA'),
-          })),
-        );
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load task');
-      } finally {
-        setLoading(false);
+  const task = data
+    ? {
+        id: data.id,
+        status: data.status,
+        createdAt: dayjs(data.createdAt).format(DATE_TIME_FORMAT),
+        updatedAt: dayjs(data.updatedAt).format(DATE_TIME_FORMAT),
       }
-    };
+    : null;
 
-    void loadTask();
-  }, [taskId]);
+  const files =
+    data?.files.map((f) => ({
+      id: f.id,
+      name: f.originalName,
+      role: f.role,
+      size: `${(f.filePath || '').split('/').pop() || '—'}`,
+    })) || [];
 
-  const handleSubmitCorrection = async () => {
-    if (!correctionText.trim()) return;
+  const corrections =
+    data?.corrections.map((c) => ({
+      id: c.id,
+      message: c.message,
+      createdAt: dayjs(c.createdAt).format(DATE_TIME_FORMAT),
+    })) || [];
 
-    try {
+  const latestResult =
+    data?.results && data.results.length > 0 ? data.results[0] : null;
+
+  const result: any = latestResult?.resultJson ?? null;
+
+  const taskPatchMutation = useMutation({
+    mutationFn: async (body: TTaskUpdateDto) => {
       const res = await fetch(`/api/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ correction: correctionText }),
+        body: JSON.stringify(body),
       });
-
       if (!res.ok) throw new Error('Failed to submit correction');
-
-      // Refresh task data to show new correction
-      const refreshRes = await fetch(`/api/tasks/${taskId}`);
-      const data = await refreshRes.json();
-
-      setCorrections(
-        data.corrections.map((c: any) => ({
-          id: c.id,
-          message: c.message,
-          createdAt: new Date(c.createdAt).toLocaleString('uk-UA'),
-        })),
-      );
+    },
+    onSuccess: async () => {
       setCorrectionText('');
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to submit correction');
-    }
+      await queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+    },
+  });
+
+  const handleSubmitCorrection = () => {
+    const correction = correctionText.trim();
+    taskPatchMutation.mutate({ correction });
   };
 
-  const handleApprove = async () => {
-    try {
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'completed' }),
-      });
-
-      if (!res.ok) throw new Error('Failed to approve task');
-
-      // Refresh task data
-      const refreshRes = await fetch(`/api/tasks/${taskId}`);
-      const data = await refreshRes.json();
-      setTask({
-        ...task,
-        status: data.status,
-      });
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to approve task');
-    }
+  const handleApprove = () => {
+    taskPatchMutation.mutate({ status: ETaskStatus.COMPLETED });
   };
 
-  const handleReRun = async () => {
-    try {
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'queued' }),
-      });
-
-      if (!res.ok) throw new Error('Failed to re-run task');
-
-      // Refresh task data
-      const refreshRes = await fetch(`/api/tasks/${taskId}`);
-      const data = await refreshRes.json();
-      setTask({
-        ...task,
-        status: data.status,
-      });
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to re-run task');
-    }
+  const handleReRun = () => {
+    taskPatchMutation.mutate({ status: ETaskStatus.QUEUED });
   };
 
   const handleDelete = async () => {
@@ -169,7 +117,7 @@ export default function TaskDetailPage({
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-slate-300" />
@@ -177,12 +125,14 @@ export default function TaskDetailPage({
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-md max-w-md text-center">
-          <h2 className="font-semibold mb-2">Error</h2>
-          <p className="text-sm">{error}</p>
+          <h2 className="font-semibold mb-2">
+            Error: {error?.message || 'Unknown error'}
+          </h2>
+          <p className="text-sm">{error?.message || 'Unknown error'}</p>
         </div>
       </div>
     );
@@ -201,7 +151,7 @@ export default function TaskDetailPage({
     );
   }
 
-  const jobsFile = files.find((f) => f.role === 'jobs');
+  const jobsFile = files.find((f) => f.role === ETaskFileRole.JOBS);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
@@ -250,7 +200,7 @@ export default function TaskDetailPage({
               </CardHeader>
               <CardContent>
                 {jobsFile ? (
-                  <JobsSourceDataView fileId={jobsFile.id} />
+                  <JobsSourceDataView taskId={task.id} fileId={jobsFile.id} />
                 ) : (
                   <p className="text-sm text-slate-500 py-4 text-center">
                     No jobs file uploaded
@@ -285,7 +235,7 @@ export default function TaskDetailPage({
           </TabsContent>
 
           {/* ── Files tab ── */}
-          <FilesTab files={files} />
+          <FilesTab taskId={task.id} files={files} />
 
           {/* ── Corrections tab ── */}
           <CorrectionsTab corrections={corrections} />

@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { TaskStatus } from '../enums';
+import { ETaskStatus } from '../enums';
 import { TaskFile } from './TaskFile';
 import { TaskResult } from './TaskResult';
 import { CorrectionLog } from './CorrectionLog';
@@ -17,8 +17,8 @@ export class Task {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.UPLOADED })
-  status: TaskStatus;
+  @Column({ type: 'enum', enum: ETaskStatus, default: ETaskStatus.UPLOADED })
+  status: ETaskStatus;
 
   @Column({ type: 'text', nullable: true })
   instructions: string | null;
