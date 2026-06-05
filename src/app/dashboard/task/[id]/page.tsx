@@ -27,8 +27,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchTaskDetail } from '@/lib/client/task-detail-api';
 import dayjs from 'dayjs';
 import { TTaskUpdateDto } from '@/lib/contracts/schemas/task.schema';
-import { DATE_TIME_FORMAT } from '@/lib/constants';
-import { ETaskFileRole, ETaskStatus } from '../../../../lib/db/enums';
+import { DATE_TIME_FORMAT, ETaskFileRole, ETaskStatus } from '@/lib/constants';
 
 export default function TaskDetailPage({
   params,

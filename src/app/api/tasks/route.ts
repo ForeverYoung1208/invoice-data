@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { taskService } from '@/lib/container';
 import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskFile } from '@/lib/db/entities/TaskFile';
-import { ETaskFileRole } from '@/lib/db/enums';
+import { ETaskFileRole } from '@/lib/constants';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';

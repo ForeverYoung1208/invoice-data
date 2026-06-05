@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 
-import { OutputData, MatchedJob } from './types';
+import { IOutputData, IMatchedJob } from './types';
 
 /**
  * Builds the total summary sheet grouped by client.
@@ -127,7 +127,7 @@ export class TotalSheetBuilder {
    * @param clientsFilePath Path to clients CSV for client name matching (optional)
    * @returns The total sheet as a CSV string
    */
-  build(data: OutputData, clientsFilePath?: string): string {
+  build(data: IOutputData, clientsFilePath?: string): string {
     const { matchedJobs } = data;
     if (matchedJobs.length === 0) {
       // Return header-only sheet
@@ -194,10 +194,10 @@ export class TotalSheetBuilder {
    * Group matched jobs by client name, resolving short names to full names.
    */
   private groupByClient(
-    jobs: MatchedJob[],
+    jobs: IMatchedJob[],
     clientMap: Map<string, string>,
-  ): Map<string, MatchedJob[]> {
-    const grouped = new Map<string, MatchedJob[]>();
+  ): Map<string, IMatchedJob[]> {
+    const grouped = new Map<string, IMatchedJob[]>();
 
     for (const job of jobs) {
       // Resolve client name using the lookup map
@@ -217,7 +217,7 @@ export class TotalSheetBuilder {
   /**
    * Build CSV rows for all parts in a client's jobs.
    */
-  private buildClientRows(clientName: string, jobs: MatchedJob[]): string[][] {
+  private buildClientRows(clientName: string, jobs: IMatchedJob[]): string[][] {
     const rows: string[][] = [];
 
     for (const job of jobs) {
@@ -257,7 +257,7 @@ export class TotalSheetBuilder {
    * Build a single data row for a matched part.
    */
   private jobRow(
-    job: MatchedJob,
+    job: IMatchedJob,
     clientName: string,
     partId: string,
     partName: string,
@@ -296,7 +296,7 @@ export class TotalSheetBuilder {
   /**
    * Calculate the total for a single client.
    */
-  private calculateClientTotal(jobs: MatchedJob[]): number {
+  private calculateClientTotal(jobs: IMatchedJob[]): number {
     return jobs.reduce((sum, job) => sum + job.matchedTotal, 0);
   }
 
@@ -356,7 +356,7 @@ export class TotalSheetBuilder {
    * @param clientsFilePath Optional path to clients CSV for name resolution
    */
   writeToFile(
-    data: OutputData,
+    data: IOutputData,
     outputPath: string,
     clientsFilePath?: string,
   ): string {

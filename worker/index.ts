@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskService } from '@/lib/services/TaskService';
-import { ETaskStatus } from '@/lib/db/enums';
+import { ETaskStatus } from '@/lib/constants';
 
 const POLL_INTERVAL_MS = 5000;
 

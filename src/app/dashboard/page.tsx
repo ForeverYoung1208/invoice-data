@@ -22,7 +22,7 @@ import {
 import { Plus, Trash2, Eye, FileText, LogOut, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
-import { ETaskStatus } from '@/lib/db/enums';
+import { ETaskStatus } from '../../lib/constants';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,7 +64,7 @@ export default function DashboardPage() {
         setTasks(data);
 
         // Compute stats from actual data
-        const allStatuses = Object.values(ETaskStatus) as ETaskStatus[];
+        const allStatuses = Object.values(ETaskStatus);
         const computedStats = allStatuses.map((status) => ({
           label: status.charAt(0).toUpperCase() + status.slice(1),
           status,
@@ -241,7 +241,7 @@ export default function DashboardPage() {
                           variant="ghost"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
-                          onClick={() => handleDelete(task.id)}
+                          onClick={() => void handleDelete(task.id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from 'fs';
 
-import { ClientInvoiceData } from './types';
+import { IClientInvoiceData } from './types';
 
 /**
  * Writes invoice data into a client CSV template by scanning for
@@ -122,7 +122,7 @@ export class ClientCSVWriter {
   /**
    * Generate the line items table rows for a client.
    */
-  private buildLineItems(invoiceData: ClientInvoiceData): string[] {
+  private buildLineItems(invoiceData: IClientInvoiceData): string[] {
     const items: string[] = [];
     let itemNumber = 0;
 
@@ -179,7 +179,7 @@ export class ClientCSVWriter {
   private replacePlaceholders(
     lines: string[],
     structure: NonNullable<ReturnType<ClientCSVWriter['scanTemplate']>>,
-    invoiceData: ClientInvoiceData,
+    invoiceData: IClientInvoiceData,
   ): string[] {
     const result = [...lines];
 
@@ -248,7 +248,7 @@ export class ClientCSVWriter {
    * @param invoiceData The invoice data to fill in
    * @returns The generated invoice CSV content as a string
    */
-  generate(templatePath: string, invoiceData: ClientInvoiceData): string {
+  generate(templatePath: string, invoiceData: IClientInvoiceData): string {
     const lines = this.parseTemplate(templatePath);
     const structure = this.scanTemplate(lines);
     const filledLines = this.replacePlaceholders(lines, structure, invoiceData);
@@ -265,7 +265,7 @@ export class ClientCSVWriter {
    */
   writeToFile(
     templatePath: string,
-    invoiceData: ClientInvoiceData,
+    invoiceData: IClientInvoiceData,
     outputPath: string,
   ): string {
     const content = this.generate(templatePath, invoiceData);

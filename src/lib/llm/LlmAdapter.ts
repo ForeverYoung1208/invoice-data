@@ -7,10 +7,10 @@
  */
 
 import type {
-  JobRow,
-  ClientRow,
-  PartRow,
-  DevicePartRow,
+  IJobRow,
+  IClientRow,
+  IPartRow,
+  IDevicePartRow,
 } from '@/lib/parsers/types';
 
 export interface ChatMessage {
@@ -32,10 +32,10 @@ export interface ChatResponse {
 }
 
 export interface ParseResult {
-  jobs: JobRow[];
-  clients: ClientRow[];
-  parts: PartRow[];
-  devices: DevicePartRow[];
+  jobs: IJobRow[];
+  clients: IClientRow[];
+  parts: IPartRow[];
+  devices: IDevicePartRow[];
   instructions: string;
 }
 

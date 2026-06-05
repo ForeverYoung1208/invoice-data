@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { ETaskFileRole } from '../enums';
+import { ETaskFileRole } from '../../constants';
 
 import type { Task } from './Task';
 

@@ -1,6 +1,6 @@
 import { getGlobalDataSource } from '../db/dataSource';
 import { Task } from '../db/entities/Task';
-import { ETaskStatus } from '../db/enums';
+import { ETaskStatus } from '../constants';
 import { CorrectionLog } from '../db/entities/CorrectionLog';
 
 export class TaskService {

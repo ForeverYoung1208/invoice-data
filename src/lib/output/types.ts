@@ -7,7 +7,7 @@
 
 // ─── Matched Job Data ───────────────────────────────────────────────────────
 
-export interface MatchedPart {
+export interface IMatchedPart {
   /** Part article number from catalog */
   partId: string;
 
@@ -33,7 +33,7 @@ export interface MatchedPart {
   comment?: string;
 }
 
-export interface MatchedJob {
+export interface IMatchedJob {
   /** Job number (e.g. "З-2026-0147") */
   jobNumber: string;
 
@@ -59,7 +59,7 @@ export interface MatchedJob {
   originalCost: number;
 
   /** Matched parts from catalog */
-  matchedParts: MatchedPart[];
+  matchedParts: IMatchedPart[];
 
   /** Overall job-level flags */
   flags: string[];
@@ -77,12 +77,12 @@ export interface MatchedJob {
  * Complete data needed to generate all output CSVs.
  * Produced by the LangGraph agent and stored in TaskResult.resultJson.
  */
-export interface OutputData {
+export interface IOutputData {
   /** ISO date string for the output file name */
   generationDate: string;
 
   /** All matched jobs */
-  matchedJobs: MatchedJob[];
+  matchedJobs: IMatchedJob[];
 
   /** Optional global instructions from the user */
   instructions?: string;
@@ -93,7 +93,7 @@ export interface OutputData {
 /**
  * Data for generating a single client's invoice CSV.
  */
-export interface ClientInvoiceData {
+export interface IClientInvoiceData {
   /** Client name from clients CSV */
   clientName: string;
 
@@ -107,7 +107,7 @@ export interface ClientInvoiceData {
   email: string;
 
   /** All matched jobs for this client */
-  matchedJobs: MatchedJob[];
+  matchedJobs: IMatchedJob[];
 
   /** Invoice date */
   invoiceDate: string;
@@ -121,7 +121,7 @@ export interface ClientInvoiceData {
 
 // ─── Sheet Rows ─────────────────────────────────────────────────────────────
 
-export interface SheetRow {
+export interface ISheetRow {
   /** Column headers (first row) */
   headers: string[];
 

@@ -2,7 +2,7 @@ import { readFileSync, existsSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
 import { ClientCSVWriter } from '../../../src/lib/output/ClientCSVWriter';
-import type { ClientInvoiceData } from '../../../src/lib/output/types';
+import type { IClientInvoiceData } from '../../../src/lib/output/types';
 
 const TEMP_DIR = join(__dirname, '..', '..', 'fixtures', 'temp');
 const TEMPLATE_DIR = join(__dirname, '..', '..', 'fixtures', 'templates');
@@ -26,7 +26,7 @@ afterEach(cleanupTemp);
 describe('ClientCSVWriter', () => {
   const writer = new ClientCSVWriter();
 
-  function createInvoiceData(): ClientInvoiceData {
+  function createInvoiceData(): IClientInvoiceData {
     return {
       clientName: 'Коваленко Олександр Вячеславович',
       address: 'м. Київ, вул. Хрещатик, 22',

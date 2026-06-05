@@ -1,4 +1,4 @@
 import { CSVParser } from './CSVParser';
-import { PartRow } from './types';
+import { IPartRow } from './types';
 
-export class PartsParser extends CSVParser<PartRow> {}
+export class PartsParser extends CSVParser<IPartRow> {}

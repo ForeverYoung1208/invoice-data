@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-export interface JobRow {
+export interface IJobRow {
   '№ заявки': string;
   'Дата прийому': string;
   'Прізвище клієнта': string;
@@ -11,7 +11,7 @@ export interface JobRow {
   'Примітки': string;
 }
 
-export interface ClientRow {
+export interface IClientRow {
   'ID клієнта': string;
   'Прізвище та ініціали': string;
   'Телефон': string;
@@ -20,7 +20,7 @@ export interface ClientRow {
   'Тип': string;
 }
 
-export interface PartRow {
+export interface IPartRow {
   'Артикул': string;
   'Назва': string;
   'Категорія': string;
@@ -29,7 +29,7 @@ export interface PartRow {
   'Наявність': string;
 }
 
-export interface DevicePartRow {
+export interface IDevicePartRow {
   'Категорія': string;
   'Бренд': string;
   'Модель': string;

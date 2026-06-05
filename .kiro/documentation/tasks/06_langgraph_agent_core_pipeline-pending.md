@@ -14,8 +14,8 @@
 
 **What to do:**
 
+  - `src/lib/agent/state/annotation.ts` — the InvoiceAgentStateAnnotation and `TInvoiceAgentState` type
 - Create `src/lib/agent/` directory with the following file layout:
-  - `types.ts` — the `InvoiceAgentState` interface
   - `nodes/` — subdirectory for all node classes
   - `InvoiceAgent.ts` — the wrapper class that compiles the graph
 - Define `InvoiceAgentState` based on the existing types:

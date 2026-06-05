@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { ETaskStatus } from '../enums';
+import { ETaskStatus } from '../../constants';
 import { TaskFile } from './TaskFile';
 import { TaskResult } from './TaskResult';
 import { CorrectionLog } from './CorrectionLog';

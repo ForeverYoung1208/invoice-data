@@ -9,7 +9,8 @@
 
 ## Enums
 
-All domain enums live in `src/lib/db/enums.ts` and use an uppercase `E` prefix (e.g. `ETaskStatus`, `ETaskFileRole`). Enum keys are UPPER_SNAKE_CASE; values are lowercase strings. These enums are the single source of truth — never use raw strings like `'queued'` in code, always reference the enum member.
+Enums use an uppercase `E` prefix (e.g. `ETaskStatus`, `ETaskFileRole`). Enum keys are UPPER_SNAKE_CASE; values are lowercase strings. These enums are the single source of truth — never use raw strings like `'queued'` in code, always reference the enum member.
+Enums are defined in `src/lib/constants.ts`.
 
 ```typescript
 // CORRECT
@@ -35,7 +36,6 @@ export enum ETaskStatus {
 ## TypeORM
 
 - Entities use `@Column({ type: "enum", enum: MyEnum })` for enum columns
-- All enums imported from `src/lib/db/enums.ts`
 - `DataSource` singleton in `src/lib/db/dataSource.ts`, cached on `global` for HMR safety
 
 ## API Documentation

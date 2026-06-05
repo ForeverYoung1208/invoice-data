@@ -1,4 +1,4 @@
 import { CSVParser } from './CSVParser';
-import { JobRow } from './types';
+import { IJobRow } from './types';
 
-export class JobsParser extends CSVParser<JobRow> {}
+export class JobsParser extends CSVParser<IJobRow> {}

@@ -3,8 +3,8 @@ import { join } from 'path';
 
 import { OutputZipper } from '../../../src/lib/output/OutputZipper';
 import type {
-  OutputData,
-  ClientInvoiceData,
+  IOutputData,
+  IClientInvoiceData,
 } from '../../../src/lib/output/types';
 import { ClientCSVWriter } from '../../../src/lib/output/ClientCSVWriter';
 
@@ -27,8 +27,8 @@ function cleanupTemp(): void {
 beforeEach(setupTemp);
 afterEach(cleanupTemp);
 
-function createClientInvoices(data: OutputData): ClientInvoiceData[] {
-  const clientMap = new Map<string, ClientInvoiceData>();
+function createClientInvoices(data: IOutputData): IClientInvoiceData[] {
+  const clientMap = new Map<string, IClientInvoiceData>();
 
   for (const job of data.matchedJobs) {
     if (!clientMap.has(job.clientName)) {
@@ -53,7 +53,7 @@ function createClientInvoices(data: OutputData): ClientInvoiceData[] {
 }
 
 describe('OutputZipper', () => {
-  const fixture: OutputData = {
+  const fixture: IOutputData = {
     generationDate: '2026-05-15T10:30:00.000Z',
     matchedJobs: [
       {

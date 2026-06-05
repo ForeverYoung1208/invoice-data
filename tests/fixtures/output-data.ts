@@ -2,12 +2,12 @@
  * Fixture data for output generation tests.
  */
 
-import type { OutputData } from '@/lib/output/types';
+import type { IOutputData } from '@/lib/output/types';
 
 /**
  * Create a sample OutputData fixture from the mock data.
  */
-export function createOutputDataFixture(): OutputData {
+export function createOutputDataFixture(): IOutputData {
   return {
     generationDate: '2026-05-15T10:30:00.000Z',
     matchedJobs: [
@@ -156,7 +156,7 @@ export function createClientsShortNamesFixture(): Record<string, string> {
 /**
  * Create an empty OutputData fixture.
  */
-export function createEmptyOutputData(): OutputData {
+export function createEmptyOutputData(): IOutputData {
   return {
     generationDate: '2026-05-15T10:30:00.000Z',
     matchedJobs: [],

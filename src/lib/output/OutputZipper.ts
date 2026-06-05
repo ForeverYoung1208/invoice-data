@@ -2,7 +2,7 @@ import { createWriteStream, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import archiver from 'archiver';
 
-import { OutputData, ClientInvoiceData } from './types';
+import { IOutputData, IClientInvoiceData } from './types';
 import { TotalSheetBuilder } from './TotalSheetBuilder';
 import { ClientCSVWriter } from './ClientCSVWriter';
 
@@ -40,8 +40,8 @@ export class OutputZipper {
    * @returns The path to the generated ZIP file
    */
   async assemble(
-    data: OutputData,
-    clientInvoices: ClientInvoiceData[],
+    data: IOutputData,
+    clientInvoices: IClientInvoiceData[],
     outputDir: string,
     templatePath: string,
     clientsFilePath?: string,

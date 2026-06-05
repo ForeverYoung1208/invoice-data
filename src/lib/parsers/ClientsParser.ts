@@ -1,4 +1,4 @@
 import { CSVParser } from './CSVParser';
-import { ClientRow } from './types';
+import { IClientRow } from './types';
 
-export class ClientsParser extends CSVParser<ClientRow> {}
+export class ClientsParser extends CSVParser<IClientRow> {}

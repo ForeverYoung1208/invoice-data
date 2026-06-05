@@ -4,5 +4,21 @@ export enum NODE_ENV {
   Test = 'test',
 }
 
+export enum ETaskStatus {
+  UPLOADED = 'uploaded',
+  QUEUED = 'queued',
+  PROCESSING = 'processing',
+  REVIEW = 'review',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+}
+
+export enum ETaskFileRole {
+  JOBS = 'jobs',
+  CLIENTS = 'clients',
+  PARTS = 'parts',
+  DEVICES = 'devices',
+}
+
 export const DATE_FORMAT = 'YYYY-MM-DD';
 export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm';

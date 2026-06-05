@@ -9,7 +9,10 @@ describe('ClientsParser', () => {
   });
 
   it('should parse a valid CSV file correctly', async () => {
-    const filePath = path.join(__dirname, '../../../tests/fixtures/mock-data/clients.csv');
+    const filePath = path.join(
+      __dirname,
+      '../../../tests/fixtures/mock-data/clients.csv',
+    );
     const results = await parser.parse(filePath);
 
     expect(results.length).toBeGreaterThan(0);

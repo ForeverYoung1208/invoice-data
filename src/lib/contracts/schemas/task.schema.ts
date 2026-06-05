@@ -1,5 +1,5 @@
 import z from 'zod';
-import { ETaskFileRole, ETaskStatus } from '../../db/enums';
+import { ETaskFileRole, ETaskStatus } from '../../constants';
 
 /**
  ******************
