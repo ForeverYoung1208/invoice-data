@@ -7,8 +7,10 @@
  * Purpose: Main landing page after login. Lists all tasks with status, date, and actions.
  */
 
-import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useApi } from '../../lib/client/useApi';
+import { apiRoutes } from '../../lib/client/api-routes';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -24,17 +26,6 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { ETaskStatus } from '../../lib/constants';
 
-// ── Types ────────────────────────────────────────────────────────────────────
-
-interface Task {
-  id: string;
-  status: ETaskStatus;
-  createdAt: string;
-  filesCount: number;
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
 const STATUS_STYLES: Record<ETaskStatus, string> = {
   uploaded: 'bg-slate-100 text-slate-700 border border-slate-300',
   queued: 'bg-blue-50 text-blue-700 border border-blue-200',
@@ -44,52 +35,37 @@ const STATUS_STYLES: Record<ETaskStatus, string> = {
   failed: 'bg-red-50 text-red-700 border border-red-200',
 };
 
-// ── Component ────────────────────────────────────────────────────────────────
-
 export default function DashboardPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [stats, setStats] = useState<
-    { label: string; status: ETaskStatus; count: number }[]
-  >([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  // Load tasks from API
-  useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const res = await fetch('/api/tasks');
-        if (!res.ok) throw new Error('Failed to fetch tasks');
-        const data: Task[] = await res.json();
-        setTasks(data);
+  const {
+    data: tasks = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: () => useApi(apiRoutes.tasks.list, { params: [] }),
+  });
 
-        // Compute stats from actual data
-        const allStatuses = Object.values(ETaskStatus);
-        const computedStats = allStatuses.map((status) => ({
-          label: status.charAt(0).toUpperCase() + status.slice(1),
-          status,
-          count: data.filter((t) => t.status === status).length,
-        }));
-        setStats(computedStats);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load tasks');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Compute stats from actual data
+  const stats = Object.values(ETaskStatus).map((status) => ({
+    label: status.charAt(0).toUpperCase() + status.slice(1),
+    status,
+    count: tasks.filter((t) => t.status === status).length,
+  }));
 
-    void loadTasks();
-  }, []);
+  const taskDeleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      useApi(apiRoutes.tasks.delete, { params: [id] }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!confirm('Are you sure you want to delete this task?')) return;
-    try {
-      const res = await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete task');
-      setTasks(tasks.filter((t) => t.id !== id));
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete task');
-    }
+    taskDeleteMutation.mutate(id);
   };
 
   return (
@@ -130,15 +106,15 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {error && (
+        {isError && error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
-            {error}
+            {error.message}
           </div>
         )}
 
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {loading
+          {isLoading
             ? Array.from({ length: 4 }).map((_, i) => (
                 <Card key={i} className="bg-white border-slate-200 shadow-sm">
                   <CardHeader className="pb-1 pt-4 px-4">
@@ -186,7 +162,7 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
+              {isLoading ? (
                 <TableRow className="border-slate-200">
                   <TableCell colSpan={5} className="text-center py-8">
                     <Loader2 className="w-6 h-6 animate-spin text-slate-300 mx-auto" />

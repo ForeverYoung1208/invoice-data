@@ -9,3 +9,9 @@ export const csvRowsSchema = z.array(csvRowSchema);
 // Inferred types
 export type TCsvRow = z.infer<typeof csvRowSchema>;
 export type TCsvRows = z.infer<typeof csvRowsSchema>;
+
+// id
+export const idSchema = z.object({
+  id: z.string(),
+});
+export type TId = z.infer<typeof idSchema>;

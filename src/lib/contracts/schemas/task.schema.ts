@@ -43,17 +43,43 @@ export const taskDetailSchema = z.object({
   errorMessage: z.string().nullable(),
 });
 
+export const taskCreatedSchema = z.object({
+  id: z.string(),
+  status: z.enum(ETaskStatus),
+  instructions: z.string().nullable(),
+  filesCount: z.number(),
+});
+
+export const taskListItemSchema = z.object({
+  id: z.string(),
+  status: z.enum(ETaskStatus),
+  createdAt: z.string(),
+  filesCount: z.number(),
+});
+
+export const taskListSchema = z.array(taskListItemSchema);
+
 export type TTaskFileDto = z.infer<typeof taskFileSchema>;
 export type TTaskCorrectionDto = z.infer<typeof taskCorrectionSchema>;
 export type TTaskResultDto = z.infer<typeof taskResultSchema>;
 export type TTaskDetailDto = z.infer<typeof taskDetailSchema>;
 export type TResultJsonDto = z.infer<typeof resultJsonSchema>;
+export type TTaskListItemDto = z.infer<typeof taskListItemSchema>;
 
 /**
  ******************
  * UI->API
  ******************
  */
+
+export const taskCreateSchema = taskDetailSchema.omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  corrections: true,
+  errorMessage: true,
+});
 
 export const taskUpdateSchema = taskDetailSchema
   .omit({ corrections: true })
@@ -62,4 +88,5 @@ export const taskUpdateSchema = taskDetailSchema
     correction: z.string().optional(),
   });
 
+export type TTaskCreateDto = z.infer<typeof taskCreateSchema>;
 export type TTaskUpdateDto = z.infer<typeof taskUpdateSchema>;

@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/table';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchTaskFileRows } from '../../../lib/client/task-detail-api';
+import { useApi } from '../../../lib/client/useApi';
+import { apiRoutes } from '../../../lib/client/api-routes';
 
 interface JobsSourceDataViewProps {
   fileId: string;
@@ -23,7 +24,7 @@ export function JobsSourceDataView({
 }: JobsSourceDataViewProps) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['task-file', taskId, fileId],
-    queryFn: () => fetchTaskFileRows(taskId, fileId),
+    queryFn: () => useApi(apiRoutes.files.rows, { params: [taskId, fileId] }),
   });
 
   if (isLoading) {

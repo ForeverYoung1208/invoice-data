@@ -14,7 +14,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useQueries } from '@tanstack/react-query';
-import { fetchTaskFileRows } from '../../../lib/client/task-detail-api';
+import { useApi } from '../../../lib/client/useApi';
+import { apiRoutes } from '../../../lib/client/api-routes';
 
 interface FileItem {
   id: string;
@@ -32,7 +33,8 @@ export function FilesTab({ files, taskId }: FilesTabProps) {
   const fileQueries = useQueries({
     queries: files.map((file) => ({
       queryKey: ['task-file', taskId, file.id],
-      queryFn: () => fetchTaskFileRows(taskId, file.id),
+      queryFn: () =>
+        useApi(apiRoutes.files.rows, { params: [taskId, file.id] }),
     })),
   });
   const isAllLoading = fileQueries.some((fq) => fq.isLoading);

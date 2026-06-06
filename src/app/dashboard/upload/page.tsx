@@ -17,8 +17,8 @@ import { FileText, Upload, X, ChevronLeft, Info, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-// ── Types ────────────────────────────────────────────────────────────────────
+import { useApi } from '../../../lib/client/useApi';
+import { apiRoutes } from '../../../lib/client/api-routes';
 
 type FileRole = 'jobs' | 'clients' | 'parts' | 'devices';
 
@@ -29,8 +29,6 @@ interface UploadSlot {
   required: boolean;
   file?: File | null;
 }
-
-// ── Data ─────────────────────────────────────────────────────────────────────
 
 const UPLOAD_SLOTS: UploadSlot[] = [
   {
@@ -65,8 +63,6 @@ const ROLE_COLORS: Record<string, string> = {
   parts: 'bg-amber-50 text-amber-700 border border-amber-200',
   devices: 'bg-green-50 text-green-700 border border-green-200',
 };
-
-// ── Component ────────────────────────────────────────────────────────────────
 
 export default function UploadPage() {
   const router = useRouter();
@@ -197,12 +193,12 @@ export default function UploadPage() {
     setDragActive(null);
 
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(role, e.dataTransfer.files[0]);
+      void handleFileSelect(role, e.dataTransfer.files[0]);
     }
   };
 
   const handleRemoveFile = (role: FileRole) => {
-    handleFileSelect(role, null);
+    void handleFileSelect(role, null);
   };
 
   const handleSubmit = async () => {
@@ -232,17 +228,13 @@ export default function UploadPage() {
         }
       });
 
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
+      const result = await useApi(apiRoutes.tasks.create, {
+        params: [],
         body: formData,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create task');
+      if (!result) {
+        throw new Error('Failed to create task');
       }
-
-      const result = await response.json();
       router.push(`/dashboard/task/${result.id}`);
     } catch (error) {
       console.error('Error creating task:', error);
@@ -385,7 +377,10 @@ export default function UploadPage() {
                       className="hidden"
                       accept=".csv"
                       onChange={(e) =>
-                        handleFileSelect(slot.role, e.target.files?.[0] || null)
+                        void handleFileSelect(
+                          slot.role,
+                          e.target.files?.[0] || null,
+                        )
                       }
                     />
                     <label
@@ -450,7 +445,7 @@ export default function UploadPage() {
             </Button>
           </Link>
           <Button
-            onClick={handleSubmit}
+            onClick={() => void handleSubmit()}
             disabled={isSubmitting}
             className="bg-blue-600 hover:bg-blue-700 text-white"
           >

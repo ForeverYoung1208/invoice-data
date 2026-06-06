@@ -38,6 +38,7 @@
 **Dependencies:** None (foundation subtask).
 
 **Estimated effort:** 0.5h
+**Spent:** 2h
 
 ---
 

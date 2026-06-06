@@ -18,14 +18,6 @@ export enum ETaskStatus {
   UPLOADED = "uploaded",
   QUEUED = "queued",
 }
-
-// WRONG — union type
-type TaskStatus = "uploaded" | "queued";
-
-// WRONG — lowercase keys
-export enum ETaskStatus {
-  uploaded = "uploaded",
-}
 ```
 
 ## Modules
@@ -44,34 +36,11 @@ export enum ETaskStatus {
 - Swagger UI is served at `/api-docs`
 - Spec is generated via `next-swagger-doc` from JSDoc annotations
 
-```typescript
-/**
- * @swagger
- * /api/tasks:
- *   post:
- *     summary: Create a new task
- *     responses:
- *       201:
- *         description: Task created
- */
-export async function POST(req: Request) { ... }
-```
-
 ## DI
 
 - All service singletons instantiated in `src/lib/container.ts`
 - Services receive dependencies via constructor injection
-- Always use TypeScript constructor shorthand for injected dependencies:
-
-```typescript
-// CORRECT
-constructor(private readonly taskService: TaskService) {}
-
-// WRONG
-constructor(taskService: TaskService) {
-  this.taskService = taskService;
-}
-```
+- Prefer use TypeScript constructor shorthand for injected dependencies
 
 ## Shared Zod API DTO Contracts
 
@@ -93,7 +62,7 @@ All API boundaries between backend routes and frontend fetch helpers must be val
 1. Define Zod schemas that mirror the API response/request shape.
 2. Infer TypeScript types via `z.infer<typeof schema>`.
 3. In route handlers, construct the response object with the inferred type and pass it to `NextResponse.json()`.
-4. In client fetch helpers, call `.parse()` on `res.json()` to validate at the HTTP boundary.
+4. In `api-routes.ts`, embed the schema as `responseSchema` on each route (see Client API Access above).
 5. API should validate incoming request bodies with Zod schemas before processing.
 
 ## Server State Management
@@ -135,7 +104,7 @@ Remove local states for `task`, `result`, `files`, `corrections`, `loading`, `er
 const queryClient = useQueryClient();
 
 const mutation = useMutation({
-  mutationFn: async (body) => { /* fetch POST/PATCH */ },
+  mutationFn: async (body) => useApi(...),
   onSuccess: async () => {
     await queryClient.invalidateQueries({ queryKey: ['task', taskId] });
   },
@@ -148,22 +117,41 @@ const mutation = useMutation({
 const fileQueries = useQueries({
   queries: files.map((file) => ({
     queryKey: ['task-file', taskId, file.id],
-    queryFn: () => fetchTaskFileRows(taskId, file.id),
+    queryFn: () => useApi(....),
   })),
 });
 ```
 
-### Client Fetch Helpers
+### Client API Access (Declarative Routes)
 
 **Directory:** `src/lib/client/`
 
-Create separate helper files for each domain:
-- `task-detail-api.ts` — task-detail and task file row fetching
-- `file-data-api.ts` — file-specific fetching
+All API calls go through the typed route factory (`api-routes.ts`) + `useApi()` wrapper. **Never write ad-hoc `fetch()` calls in components.**
+
+**Define the route in `api-routes.ts`** — each route is a factory function (curried), params become arguments so URLs are built at call site; see api-routes.ts for useage patern.
+
+**Call via `useApi()` in components:**
+
+```ts
+// Query
+const { data } = useQuery({
+  queryKey: ['task', taskId],
+  queryFn: () => useApi(apiRoutes.tasks.detail, { params: [taskId] }),
+});
+
+// Mutation
+const mutation = useMutation({
+  mutationFn: (body) =>
+    useApi(apiRoutes.tasks.patch, { params: [taskId], body }),
+});
+```
 
 **Rules:**
-- Helpers must **throw** on non-OK responses (TanStack Query uses thrown errors for `isError`).
-- Validate responses with Zod schema `.parse()` before returning.
+- **URLs live only in `api-routes.ts`** — never duplicate paths in components.
+- **Params flow through `params[]`** — `useApi` spreads them into the route factory (`route(...params)`).
+- **Types are inferred** — no manual type annotations needed; they flow from `responseSchema`.
+- **Body validation is automatic** — `useApi` validates the body against `bodySchema` before sending.
+- **Error handling is automatic** — `useApi` throws on non-2xx responses (TanStack Query uses thrown errors for `isError`).
 
 ## Date Formatting
 
@@ -174,12 +162,3 @@ Create separate helper files for each domain:
 
 - Function parameters and returns must have explicit types.
 - Prefer `Record<string, string>[]` over `Record<string, any>[]` when applicable.
-
-Example:
-
-```ts
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<NextResponse> { ... }
-```

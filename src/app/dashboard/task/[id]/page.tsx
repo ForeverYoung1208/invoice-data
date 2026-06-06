@@ -24,10 +24,11 @@ import { CorrectionsTab } from '@/components/dashboard/task-detail/corrections-t
 import { InstructionsTab } from '@/components/dashboard/task-detail/instructions-tab';
 import { TaskFooter } from '@/components/dashboard/task-detail/task-footer';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchTaskDetail } from '@/lib/client/task-detail-api';
 import dayjs from 'dayjs';
 import { TTaskUpdateDto } from '@/lib/contracts/schemas/task.schema';
 import { DATE_TIME_FORMAT, ETaskFileRole, ETaskStatus } from '@/lib/constants';
+import { useApi } from '../../../../lib/client/useApi';
+import { apiRoutes } from '../../../../lib/client/api-routes';
 
 export default function TaskDetailPage({
   params,
@@ -45,7 +46,7 @@ export default function TaskDetailPage({
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['task', taskId],
-    queryFn: () => fetchTaskDetail(taskId),
+    queryFn: () => useApi(apiRoutes.tasks.detail, { params: [taskId] }),
   });
 
   const task = data
@@ -78,18 +79,20 @@ export default function TaskDetailPage({
   const result: any = latestResult?.resultJson ?? null;
 
   const taskPatchMutation = useMutation({
-    mutationFn: async (body: TTaskUpdateDto) => {
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error('Failed to submit correction');
-    },
+    mutationFn: (body: TTaskUpdateDto) =>
+      useApi(apiRoutes.tasks.patch, {
+        params: [taskId],
+        body,
+      }),
     onSuccess: async () => {
       setCorrectionText('');
       await queryClient.invalidateQueries({ queryKey: ['task', taskId] });
     },
+  });
+
+  const taskDeleteMutation = useMutation({
+    mutationFn: () => useApi(apiRoutes.tasks.delete, { params: [taskId] }),
+    onSuccess: () => router.push('/dashboard'),
   });
 
   const handleSubmitCorrection = () => {
@@ -105,15 +108,9 @@ export default function TaskDetailPage({
     taskPatchMutation.mutate({ status: ETaskStatus.QUEUED });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!confirm('Are you sure you want to delete this task?')) return;
-    try {
-      const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete task');
-      router.push('/dashboard');
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete task');
-    }
+    taskDeleteMutation.mutate();
   };
 
   if (isLoading) {

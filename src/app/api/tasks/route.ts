@@ -6,6 +6,7 @@ import { ETaskFileRole } from '@/lib/constants';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { TTaskListItemDto } from '../../../lib/contracts/schemas/task.schema';
 
 /**
  * @swagger
@@ -66,7 +67,7 @@ export async function GET() {
     const tasks = await taskService.findAll();
     const taskFileRepo = ds.getRepository(TaskFile);
 
-    const result = await Promise.all(
+    const result: TTaskListItemDto[] = await Promise.all(
       tasks.map(async (task) => {
         const files = await taskFileRepo.find({ where: { taskId: task.id } });
         return {
@@ -88,6 +89,7 @@ export async function GET() {
   }
 }
 
+// TODO: make it transactional
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
