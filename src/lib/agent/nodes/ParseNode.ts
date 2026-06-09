@@ -32,12 +32,18 @@ export class ParseNode implements IBaseNode {
       return { errors: missing.map((r) => `Missing file for role: ${r}`) };
     }
 
-    const [jobs, clients, parts, devices] = await Promise.all([
-      new JobsParser().parse(jobsFile!.filePath),
-      new ClientsParser().parse(clientsFile!.filePath),
-      new PartsParser().parse(partsFile!.filePath),
-      new DevicePartsParser().parse(devicesFile!.filePath),
-    ]);
+    let jobs, clients, parts, devices;
+    try {
+      [jobs, clients, parts, devices] = await Promise.all([
+        new JobsParser().parse(jobsFile!.filePath),
+        new ClientsParser().parse(clientsFile!.filePath),
+        new PartsParser().parse(partsFile!.filePath),
+        new DevicePartsParser().parse(devicesFile!.filePath),
+      ]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { errors: [`ParseNode: failed to read CSV files: ${msg}`] };
+    }
 
     const empty = [
       jobs.length === 0 && 'jobs',

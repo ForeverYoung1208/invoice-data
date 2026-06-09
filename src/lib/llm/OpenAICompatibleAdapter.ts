@@ -19,7 +19,7 @@ import {
   LlmAdapter,
 } from './LlmAdapter';
 
-// ─── Error class ─────────────────────────────────────────────────────────────
+// Error class
 
 export enum LlmErrorCode {
   INVALID_RESPONSE = 'INVALID_RESPONSE',
@@ -38,7 +38,7 @@ export class LlmError extends Error {
   }
 }
 
-// ─── Config ──────────────────────────────────────────────────────────────────
+// Config
 
 export interface LlmConfig {
   baseUrl: string;
@@ -46,7 +46,7 @@ export interface LlmConfig {
   model: string;
 }
 
-// ─── Adapter ─────────────────────────────────────────────────────────────────
+// Adapter
 
 export class OpenAICompatibleAdapter extends LlmAdapter {
   private readonly chatModel: ChatOpenAI;
@@ -54,8 +54,8 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
   constructor(config: LlmConfig) {
     super();
     this.chatModel = new ChatOpenAI({
-      modelName: config.model,
-      openAIApiKey: config.apiKey,
+      model: config.model,
+      apiKey: config.apiKey,
       configuration: {
         baseURL: config.baseUrl,
       },
@@ -101,8 +101,16 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
     options?: ChatOptions,
   ): Promise<T> {
     const response = await this.generate(messages, options);
+    let content = response.content;
+
+    // Try to extract JSON from markdown code blocks
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      content = jsonMatch[1];
+    }
+
     try {
-      return JSON.parse(response.content) as T;
+      return JSON.parse(content) as T;
     } catch {
       throw new LlmError(
         `LLM returned invalid JSON: ${response.content.slice(0, 200)}`,
