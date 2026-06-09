@@ -67,6 +67,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 **Dependencies:** Subtask 6.1 (state schema, node interface).
 
 **Estimated effort:** 0.5h
+**Spent:** 1h
 
 ---
 
