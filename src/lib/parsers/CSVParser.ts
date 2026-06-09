@@ -1,7 +1,7 @@
 import fs from 'fs';
 import csv from 'csv-parser';
 
-export abstract class CSVParser<T> {
+export class CSVParser<T> {
   /**
    * Parses a CSV file and returns an array of objects of type T.
    * @param filePath The path to the CSV file.

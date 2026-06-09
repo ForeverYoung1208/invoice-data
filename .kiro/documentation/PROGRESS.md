@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~11h**
+**Completed: ~11.5h**
 
 ---
 
@@ -35,7 +35,12 @@
 ### 6. LangGraph agent — core pipeline
 - **Estimate:** 6h
 - **Notes:** StateGraph, 4 node classes, edges, integration test — most complex task
-- **Satus** In progress. Already spent 4 hours (state on 28.05.2026);
+- **Status:** In progress. Already spent 4 hours (state on 28.05.2026);
+
+### 6.2.1. Refactor: replace Cyrillic bracket-notation DTO access with typed English-key interfaces
+- **Estimate:** 0h (unplanned refactoring)
+- **Notes:** Added `parsers/mappers.ts` as single source of truth for CSV column → DTO key mapping. Rewrote all 4 parser interfaces with English keys. Updated all consumers (MatchPartsNode, TotalSheetBuilder, all parser tests).
+- **Status:** Completed. Spent: 0.5h
 
 ### 7. CSV output generation
 - **Estimate:** 4h

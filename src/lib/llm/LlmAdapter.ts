@@ -1,17 +1,6 @@
 /**
  * LLM adapter — abstract interface + types.
- *
- * All LLM interactions flow through this interface so that the concrete
- * provider (LiteLLM, Bedrock, mock, etc.) can be swapped without touching
- * application code.
  */
-
-import type {
-  IJobRow,
-  IClientRow,
-  IPartRow,
-  IDevicePartRow,
-} from '@/lib/parsers/types';
 
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -31,22 +20,10 @@ export interface ChatResponse {
   };
 }
 
-export interface ParseResult {
-  jobs: IJobRow[];
-  clients: IClientRow[];
-  parts: IPartRow[];
-  devices: IDevicePartRow[];
-  instructions: string;
-}
-
 export interface CorrectionResponse {
   resultJson: string;
 }
 
-/**
- * Abstract LLM adapter — subclasses must implement the two generation
- * methods.
- */
 export abstract class LlmAdapter {
   abstract generate(
     messages: ChatMessage[],

@@ -177,10 +177,11 @@ export class TotalSheetBuilder {
     try {
       const clients = this.parseClientsFile(clientsFilePath);
       for (const client of clients) {
-        const shortName = client['Прізвище та ініціали'] ?? '';
-        const fullName = client['Прізвище та ініціали'] ?? '';
-        // Store both short and full as keys → full name
-        map.set(shortName, fullName);
+        // 'Прізвище та ініціали' is the only clients column referenced here;
+        // the raw CSV row is intentionally used via the inline parser so we
+        // access it once, here, as the sole mapping point.
+        const name = client['Прізвище та ініціали'] ?? '';
+        map.set(name, name);
       }
     } catch {
       // If we can't parse the clients file, return empty map

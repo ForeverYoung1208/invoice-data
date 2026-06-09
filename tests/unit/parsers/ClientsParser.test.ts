@@ -1,5 +1,5 @@
-import { ClientsParser } from '../../../src/lib/parsers/ClientsParser';
 import path from 'path';
+import { ClientsParser } from '../../../src/lib/parsers/ClientsParser';
 
 describe('ClientsParser', () => {
   let parser: ClientsParser;
@@ -8,19 +8,16 @@ describe('ClientsParser', () => {
     parser = new ClientsParser();
   });
 
-  it('should parse a valid CSV file correctly', async () => {
-    const filePath = path.join(
-      __dirname,
-      '../../../tests/fixtures/mock-data/clients.csv',
-    );
+  it('parses a valid CSV and maps to English keys', async () => {
+    const filePath = path.join(__dirname, '../../../tests/fixtures/mock-data/clients.csv');
     const results = await parser.parse(filePath);
 
     expect(results.length).toBeGreaterThan(0);
-    expect(results[0]['ID клієнта']).toBe('КЛ-001');
+    expect(results[0].clientId).toBe('КЛ-001');
+    expect(results[0]).toHaveProperty('fullName');
   });
 
-  it('should throw an error if the file does not exist', async () => {
-    const filePath = path.join(__dirname, '../../../non_existent_file.csv');
-    await expect(parser.parse(filePath)).rejects.toThrow('File not found');
+  it('throws if the file does not exist', async () => {
+    await expect(parser.parse('/non_existent_file.csv')).rejects.toThrow('File not found');
   });
 });

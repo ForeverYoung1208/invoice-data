@@ -1,42 +1,44 @@
-/* eslint-disable prettier/prettier */
+// Clean DTO interfaces — English keys, consumed by the entire application.
+// The CSV headers (Cyrillic) are mapped to these in parsers/mappers.ts.
+
 export interface IJobRow {
-  '№ заявки': string;
-  'Дата прийому': string;
-  'Прізвище клієнта': string;
-  'Пристрій': string;
-  'Модель': string;
-  'Опис несправності': string;
-  'Статус': string;
-  'Вартість ремонт.': string;
-  'Примітки': string;
+  jobNumber: string; // № заявки
+  date: string; // Дата прийому
+  clientName: string; // Прізвище клієнта
+  deviceType: string; // Пристрій
+  model: string; // Модель
+  faultDescription: string; // Опис несправності
+  status: string; // Статус
+  repairCost: string; // Вартість ремонт.
+  notes: string; // Примітки
 }
 
 export interface IClientRow {
-  'ID клієнта': string;
-  'Прізвище та ініціали': string;
-  'Телефон': string;
-  'Email': string;
-  'Адреса': string;
-  'Тип': string;
+  clientId: string; // ID клієнта
+  fullName: string; // Прізвище та ініціали
+  phone: string; // Телефон
+  email: string; // Email
+  address: string; // Адреса
+  type: string; // Тип
 }
 
 export interface IPartRow {
-  'Артикул': string;
-  'Назва': string;
-  'Категорія': string;
-  'Ціна закупівлі (₴)': string;
-  'Ціна продажу (₴)': string;
-  'Наявність': string;
+  partId: string; // Артикул
+  name: string; // Назва
+  category: string; // Категорія
+  purchasePrice: string; // Ціна закупівлі (₴)
+  salePrice: string; // Ціна продажу (₴)
+  inStock: string; // Наявність
 }
 
 export interface IDevicePartRow {
-  'Категорія': string;
-  'Бренд': string;
-  'Модель': string;
-  'Тип пристрою': string;
-  'Складність ремонту (1-5)': string;
-  'Час ремонту (год)': string;
-  'Типові запчастини': string;
-  'Чорний список запчастин': string;
-  'Примітки': string;
+  category: string; // Категорія
+  brand: string; // Бренд
+  model: string; // Модель
+  deviceType: string; // Тип пристрою
+  repairComplexity: string; // Складність ремонту (1-5)
+  repairTimeHours: string; // Час ремонту (год)
+  typicalParts: string; // Типові запчастини
+  blacklistedParts: string; // Чорний список запчастин
+  notes: string; // Примітки
 }

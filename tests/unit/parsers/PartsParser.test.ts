@@ -1,5 +1,5 @@
-import { PartsParser } from '../../../src/lib/parsers/PartsParser';
 import path from 'path';
+import { PartsParser } from '../../../src/lib/parsers/PartsParser';
 
 describe('PartsParser', () => {
   let parser: PartsParser;
@@ -8,16 +8,17 @@ describe('PartsParser', () => {
     parser = new PartsParser();
   });
 
-  it('should parse a valid CSV file correctly', async () => {
+  it('parses a valid CSV and maps to English keys', async () => {
     const filePath = path.join(__dirname, '../../../tests/fixtures/mock-data/parts.csv');
     const results = await parser.parse(filePath);
 
     expect(results.length).toBeGreaterThan(0);
-    expect(results[0]['Артикул']).toBe('ЗЧ-БЖ-001');
+    expect(results[0].partId).toBe('ЗЧ-БЖ-001');
+    expect(results[0]).toHaveProperty('salePrice');
+    expect(results[0]).toHaveProperty('inStock');
   });
 
-  it('should throw an error if the file does not exist', async () => {
-    const filePath = path.join(__dirname, '../../../non_existent_file.csv');
-    await expect(parser.parse(filePath)).rejects.toThrow('File not found');
+  it('throws if the file does not exist', async () => {
+    await expect(parser.parse('/non_existent_file.csv')).rejects.toThrow('File not found');
   });
 });
