@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~11.5h**
+**Completed: ~39h**
 
 ---
 
@@ -35,8 +35,10 @@
 ### 6. LangGraph agent — core pipeline
 - **Estimate:** 6h
 - **Notes:** StateGraph, 4 node classes, edges, integration test — most complex task
-- **Status:** In progress. Already spent 4 hours (state on 28.05.2026);
+- **Status:** Completed. Total spent: 15h (6.1: 2h, 6.2: 1h, 6.2.1: 0.5h, 6.3: 3h, 6.4: 4h, 6.5: 1h, 6.6: 2h, 6.7: 0.5h, 6.8: 1h)
 - **Subtask 6.2.1 (Completed):** Refactor: replace Cyrillic bracket-notation DTO access with typed English-key interfaces. (Notes: Added `parsers/mappers.ts` as single source of truth for CSV column → DTO key mapping. Rewrote all 4 parser interfaces with English keys. Updated all consumers (MatchPartsNode, TotalSheetBuilder, all parser tests). Spent: 0.5h)
+- **Subtask 6.7 (Completed):** Register InvoiceAgent in DI container (`src/lib/container.ts`). Spent: 0.5h
+- **Subtask 6.8 (Completed):** Integration test — fixture-driven end-to-end pipeline (parse→match→validate→generate). 3 tests: happy path ZIP creation, blacklist warningLevel override, LLM error accumulation. Spent: 1h
 
 ### 7. CSV output generation
 - **Estimate:** 4h
