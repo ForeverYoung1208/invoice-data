@@ -154,7 +154,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 **Dependencies:** Subtask 6.4 (validated `matchedJobs`), Task 7 (`TotalSheetBuilder`, `ClientCSVWriter`, `OutputZipper`), Task 3 (`TaskService`).
 
 **Estimated effort:** 1h
-
+**Done. Spent:** 1h
 ---
 
 ### Subtask 6.6 — Assemble the StateGraph: wiring nodes, edges, and the `InvoiceAgent` wrapper

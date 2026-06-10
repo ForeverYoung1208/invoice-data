@@ -5,6 +5,7 @@
 import { AuthService } from './services/AuthService';
 import { ConfigService } from './services/ConfigService';
 import { TaskService } from './services/TaskService';
+import { TaskResultRepository } from './db/repositories/TaskResultRepository';
 import { LlmAdapterFactory } from './llm/LlmAdapterFactory';
 
 import { TotalSheetBuilder } from './output/TotalSheetBuilder';
@@ -14,6 +15,7 @@ import { OutputZipper } from './output/OutputZipper';
 export const configService = new ConfigService();
 export const authService = new AuthService();
 export const taskService = new TaskService();
+export const taskResultRepository = new TaskResultRepository();
 export const llmAdapter = LlmAdapterFactory.create();
 
 // Output generation singletons
