@@ -23,10 +23,15 @@ export interface IMatchedPart {
   /** Quantity matched */
   quantity: number;
 
-  /** Whether the LLM was uncertain about this match */
-  isUncertain: boolean;
+  /** LLM confidence that this part is compatible with the device (0–1) */
+  compatibilityConfidence: number;
 
-  /** Warning level (0 = none, 0.5 = not recommended, 1 = blacklisted/incompatible) */
+  /**
+   * Integral warning level set by the pipeline. For now calculated by level of LLM confidence and black list.
+   * for future there are possible additional factors.
+   * - 0–1 = 1 − compatibilityConfidence (set by MatchPartsNode)
+   * - 1   = blacklisted part (overridden by ValidateCompatibilityNode)
+   */
   warningLevel: number;
 
   /** Reason for flag / warning (empty if none) */
@@ -60,9 +65,6 @@ export interface IMatchedJob {
 
   /** Matched parts from catalog */
   matchedParts: IMatchedPart[];
-
-  /** Overall job-level flags */
-  flags: string[];
 
   /** Overall job-level warnings */
   warnings: string[];

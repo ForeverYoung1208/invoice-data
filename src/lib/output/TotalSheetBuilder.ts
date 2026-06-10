@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 
 import { IOutputData, IMatchedJob } from './types';
+import { PART_UNCERTAINTY_THRESHOLD } from '../constants';
 
 /**
  * Builds the total summary sheet grouped by client.
@@ -227,7 +228,10 @@ export class TotalSheetBuilder {
         rows.push(this.jobRow(job, clientName, '', '', '', 0, 0, '', ''));
       } else {
         for (const part of job.matchedParts) {
-          const flag = part.isUncertain ? '⚠️ Невпевнено' : '';
+          const flag =
+            part.compatibilityConfidence < PART_UNCERTAINTY_THRESHOLD
+              ? '⚠️ Невпевнено'
+              : '';
           const warning =
             part.warningLevel === 1
               ? '❌ Несумісність'

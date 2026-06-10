@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { LlmAdapter } from '../../llm/LlmAdapter';
 import { IJobRow, IPartRow } from '../../parsers/types';
 import { IMatchedJob, IMatchedPart } from '../../output/types';
@@ -60,8 +61,9 @@ export class MatchPartsNode implements IBaseNode {
           'Also pay attention for typical spare parts and blacklisted spare parts for the device being repaired. ' +
           'Also pay attention for availability of the spare parts you are going to choose. ' +
           'Return ONLY a raw JSON array (no markdown). Each element: ' +
-          '{ "partId": string, "partName": string, "category": string, "price": number, "quantity": number, "isUncertain": boolean, "comment": string }. ' +
-          '"isUncertain" = true when the match is ambiguous. "comment" explains uncertainty or is empty string. ' +
+          '{ "partId": string, "partName": string, "category": string, "price": number, "quantity": number, "compatibilityConfidence": number, "comment": string }. ' +
+          '"compatibilityConfidence" = 0.0–1.0, how confident you are this part is compatible with the device being repaired. ' +
+          '"comment" explains low confidence or is empty string. ' +
           (instructions ? `Extra instructions: ${instructions}` : ''),
       },
       {
@@ -76,19 +78,35 @@ export class MatchPartsNode implements IBaseNode {
     const raw = await this.llm.generateJson<IMatchedPart[]>(messages, {
       temperature: 0,
     });
-    const parts: IMatchedPart[] = (Array.isArray(raw) ? raw : []).map((p) => ({
-      partId: String(p.partId ?? ''),
-      partName: String(p.partName ?? ''),
-      category: String(p.category ?? ''),
-      price: Number(p.price ?? 0),
-      quantity: Number(p.quantity ?? 1),
-      isUncertain: Boolean(p.isUncertain),
-      warningLevel: 0, // TODO: Think about using llm certainty level as basis for warning level.
-      comment: p.comment ?? '',
+    const rawPartSchema = z.object({
+      partId: z.string(),
+      partName: z.string(),
+      category: z.string(),
+      price: z.number(),
+      quantity: z.number().int().positive(),
+      compatibilityConfidence: z.number().min(0).max(1),
+      comment: z.string(),
+    });
+
+    const parsed = z.array(rawPartSchema).safeParse(raw);
+    if (!parsed.success) {
+      throw new Error(
+        `LLM returned invalid part data: ${parsed.error.message}`,
+      );
+    }
+
+    const parts: IMatchedPart[] = parsed.data.map((p) => ({
+      partId: p.partId,
+      partName: p.partName,
+      category: p.category,
+      price: p.price,
+      quantity: p.quantity,
+      compatibilityConfidence: p.compatibilityConfidence,
+      warningLevel: parseFloat((1 - p.compatibilityConfidence).toFixed(2)),
+      comment: p.comment,
     }));
 
     const matchedTotal = parts.reduce((s, p) => s + p.price * p.quantity, 0);
-    const flags = parts.filter((p) => p.isUncertain).map(() => '⚠️ Невпевнено');
 
     return {
       jobNumber: job.jobNumber,
@@ -100,7 +118,6 @@ export class MatchPartsNode implements IBaseNode {
       jobStatus: job.status,
       originalCost: Number(job.repairCost) || 0,
       matchedParts: parts,
-      flags,
       warnings: [],
       matchedTotal,
     };
@@ -118,7 +135,6 @@ function emptyJob(job: IJobRow): IMatchedJob {
     jobStatus: job.status,
     originalCost: Number(job.repairCost) || 0,
     matchedParts: [],
-    flags: [],
     warnings: ['LLM matching failed'],
     matchedTotal: 0,
   };

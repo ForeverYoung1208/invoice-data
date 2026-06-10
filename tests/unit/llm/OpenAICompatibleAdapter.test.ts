@@ -49,8 +49,8 @@ describe('OpenAICompatibleAdapter', () => {
 
       expect(mockedChatOpenAI).toHaveBeenCalledWith(
         expect.objectContaining({
-          modelName: 'test-model',
-          openAIApiKey: 'test-key',
+          model: 'test-model',
+          apiKey: 'test-key',
           configuration: { baseURL: 'http://localhost:4000/v1' },
           temperature: 0,
         }),

@@ -1,7 +1,7 @@
 ### Task 6: LangGraph agent — core invoice pipeline
 
 - **Objective:** StateGraph processing a task end-to-end: parse → match → validate → generate
-- **Implementation:** InvoiceAgentState typed schema. Node classes: ParseNode, MatchPartsNode (LLM call per job → {partId, confidence, note?}[], flags low-confidence), ValidateCompatibilityNode (cross-checks device-parts map, adds compatibilityWarning), GenerateOutputNode (delegates to Task 7 classes). Linear edges with conditional re-entry via CorrectionNode (Task 10). InvoiceAgent class wraps the compiled graph, registered in container. Integration test with fixture files + mocked LLM
+- **Implementation:** InvoiceAgentState typed schema. Node classes: ParseNode, MatchPartsNode (LLM call per job → {partId, compatibilityConfidence, comment}[], derives warningLevel as 1−confidence), ValidateCompatibilityNode (blacklist-only check, overrides warningLevel=1), GenerateOutputNode (delegates to Task 7 classes). Linear edges with conditional re-entry via CorrectionNode (Task 10). InvoiceAgent class wraps the compiled graph, registered in container. Integration test with fixture files + mocked LLM
 - **Demo:** Running the graph on fixture inputs produces a valid ZIP with correct total sheet and per-client files
 
 ---
@@ -73,7 +73,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 
 ### Subtask 6.3 — MatchPartsNode: LLM-driven part matching per job
 
-**Goal:** A node that iterates over every job from ParseNode, invokes the LLM to find matching parts from the catalog, and builds `MatchedJob` objects with confidence scores and flags.
+**Goal:** A node that iterates over every job from ParseNode, invokes the LLM to find matching parts from the catalog, and builds `MatchedJob` objects with compatibility confidence scores.
 
 **What to do:**
 
@@ -83,12 +83,11 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
     - The job description (fault description, device type, model)
     - The full parts catalog (article, name, category, price, availability)
     - The user instructions (from state)
-    - A JSON schema for the response: `{ partId, partName, category, price, quantity, isUncertain, comment }[]`
-  - Call `llmAdapter.generateJson<MatchedPart[]>(messages)` per job
+    - A JSON schema for the response: `{ partId, partName, category, price, quantity, compatibilityConfidence, comment }[]`
+  - Validate the LLM response with Zod — throw on invalid shape (caught per-job, emits `emptyJob` + pushes to `state.errors`)
   - Build `MatchedJob` objects from the job data + matched parts
   - Compute `matchedTotal` per job (Σ price × quantity)
-  - Set `flags: ['⚠️ Невпевнено']` for any part with `isUncertain: true`
-  - Set `warningLevel: 0` for all parts here (compatibility check happens in ValidateCompatibilityNode)
+  - Derive `warningLevel = 1 − compatibilityConfidence` per part
   - Return `{ matchedJobs }` — the accumulated list of all matched jobs
 - Implement prompt engineering:
   - System message: instruct the LLM to match repair parts based on fault description, device model, and catalog
@@ -106,32 +105,30 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 
 ---
 
-### Subtask 6.4 — ValidateCompatibilityNode: cross-check device-part compatibility
+### Subtask 6.4 — ValidateCompatibilityNode: enforce device-part blacklist
 
-**Goal:** A node that reviews every `MatchedPart` from MatchPartsNode against the device-parts catalog (Task 4) and flags incompatible matches.
+**Goal:** A node that checks every `MatchedPart` from MatchPartsNode against the device-parts catalog blacklist and hard-overrides `warningLevel = 1` for any blacklisted part.
 
 **What to do:**
 
 - Create `src/lib/agent/nodes/ValidateCompatibilityNode.ts`
 - Implement `execute(state)`:
   - For each `MatchedJob` in `state.matchedJobs`:
-    - Look up the device's compatibility rules from `state.devices`:
-      - `Типові запчастини` (recommended parts list — partial match on part article/name)
-      - `Чорний список запчастин` (forbidden parts — partial match on part article/name)
+    - Look up the device's blacklist from `state.devices` (`Чорний список запчастин`)
     - For each `MatchedPart` in that job:
-      - Check if the part itself (article number or name, not just category) is in the blacklisted list → set `part.warningLevel = 1`, add warning message
-      - Check if the part is NOT in the recommended parts list (`Типові запчастини`) → set `part.warningLevel = 0.5` (soft warning — the part works but isn't the typical choice)
-    - Collect job-level warnings into `job.warnings` (strings describing the issue)
-  - Return `{ matchedJobs }` — the modified list with warningLevels populated
-- No LLM call here — this is deterministic cross-referencing
-- Add logging for every warning produced (for audit trail)
+      - If the part article or name matches a blacklisted entry → set `part.warningLevel = 1`, append a warning to `job.warnings[]`
+  - Return `{ matchedJobs }` — the modified list
+- No LLM call — deterministic cross-reference only
+- Log every blacklist hit for audit trail
 
-**Why:** Compatibility validation is a rule-based check, not an LLM task. The device-parts catalog contains explicit compatibility rules. This node acts as a quality gate that catches catalog mismatches the LLM might have missed. It runs after the LLM match because the LLM produces the candidates, and this node validates them against hard rules.
+**Note on warningLevel:** `warningLevel` is already set to `1 − compatibilityConfidence` by `MatchPartsNode` (LLM signal). This node only overrides to exactly `1` for hard blacklist hits. There is no `0.5` level — the recommended-parts list (`Типові запчастини`) is not checked because device names cannot be reliably matched.
 
-**Dependencies:** Subtask 6.3 (MatchPartsNode produces `matchedJobs`).
+**Why:** The blacklist is the only hard compatibility rule the system enforces. Users maintain it carefully. The LLM confidence-based `warningLevel` from `MatchPartsNode` covers soft uncertainty; this node handles explicit "never use this part with this device" rules.
 
-**Estimated effort:** 1h
+**Dependencies:** Subtask 6.3 (MatchPartsNode produces `matchedJobs` with `warningLevel` pre-populated).
 
+**Estimated effort:** 0.5h
+**Done. Spent:** 3h (including confidence logic refactoring. )
 ---
 
 ### Subtask 6.5 — GenerateOutputNode: delegate to output builders and save results
@@ -242,8 +239,8 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
   - Assert:
     - `state.matchedJobs` has the correct number of jobs
     - Each `MatchedJob` has `matchedParts` populated
-    - `isUncertain` flags are correctly set based on mock data
-    - `warningLevel` values are correctly set based on device compatibility (0 = none, 0.5 = not recommended, 1 = blacklisted)
+    - `compatibilityConfidence` values are set from mock data; `warningLevel = 1 − confidence`
+    - `warningLevel = 1` for blacklisted parts (overridden by ValidateCompatibilityNode)
     - `OutputData` can be built into a total sheet CSV
     - The ZIP file is created at the expected path
     - ZIP contains `total_YYYY_MM_DD.csv` + per-client files
@@ -268,7 +265,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 | 6.1 | State schema, node interface, file layout | 0.5h | — |
 | 6.2 | ParseNode | 0.5h | 6.1 |
 | 6.3 | MatchPartsNode (LLM per job) | 2h | 6.1, Task 5 |
-| 6.4 | ValidateCompatibilityNode | 1h | 6.3 |
+| 6.4 | ValidateCompatibilityNode (blacklist only) | 0.5h | 6.3 |
 | 6.5 | GenerateOutputNode | 1h | 6.4, Task 7 |
 | 6.6 | Assemble StateGraph + InvoiceAgent wrapper | 1h | 6.2–6.5 |
 | 6.7 | DI container registration | 0.25h | 6.6 |
@@ -286,7 +283,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
    - Individual job failures don't poison the entire batch
    - It's easier to retry or skip problematic jobs
 
-3. **ValidateCompatibilityNode is deterministic.** Compatibility rules from the device-parts catalog are explicit (recommended parts list + blacklist). This is a rule-based check, not an LLM task. It operates at the part level (article/name), not just category level. Keeping it deterministic makes the pipeline more predictable.
+3. **ValidateCompatibilityNode is deterministic.** Only the blacklist (`Чорний список запчастин`) is enforced — the recommended-parts list is not checked because device names cannot be reliably matched. Soft uncertainty is already captured by `compatibilityConfidence` from the LLM. This node hard-overrides `warningLevel = 1` only for explicit blacklist hits, keeping the rule deterministic and auditable.
 
 4. **GenerateOutputNode delegates, doesn't duplicate.** The output builders (`TotalSheetBuilder`, `ClientCSVWriter`, `OutputZipper`) are already tested in Task 7. This node only assembles the data and calls them — no CSV generation logic here.
 

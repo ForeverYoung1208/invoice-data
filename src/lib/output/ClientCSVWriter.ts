@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'fs';
 
 import { IClientInvoiceData } from './types';
+import { PART_UNCERTAINTY_THRESHOLD } from '../constants';
 
 /**
  * Writes invoice data into a client CSV template by scanning for
@@ -137,7 +138,7 @@ export class ClientCSVWriter {
 
         // Build a note column if there are flags or comments
         let note = '';
-        if (part.isUncertain) {
+        if (part.compatibilityConfidence < PART_UNCERTAINTY_THRESHOLD) {
           note += '⚠️ Невпевнено';
         }
         if (part.warningLevel === 1) {

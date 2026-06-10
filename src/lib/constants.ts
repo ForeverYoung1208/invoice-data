@@ -22,3 +22,6 @@ export enum ETaskFileRole {
 
 export const DATE_FORMAT = 'YYYY-MM-DD';
 export const DATE_TIME_FORMAT = 'YYYY-MM-DD HH:mm';
+
+/** Parts with LLM compatibility confidence below this threshold are flagged as uncertain */
+export const PART_UNCERTAINTY_THRESHOLD = 0.8;
