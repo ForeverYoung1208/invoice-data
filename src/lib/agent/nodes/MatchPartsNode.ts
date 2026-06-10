@@ -56,6 +56,9 @@ export class MatchPartsNode implements IBaseNode {
         role: 'system' as const,
         content:
           'You are a repair-shop invoicing assistant. Match spare parts from the catalog to the repair job. ' +
+          'When matching pay additional attention for the current job notes (they contain important information about the repair and spare parts that were used during repairing. ). ' +
+          'Also pay attention for typical spare parts and blacklisted spare parts for the device being repaired. ' +
+          'Also pay attention for availability of the spare parts you are going to choose. ' +
           'Return ONLY a raw JSON array (no markdown). Each element: ' +
           '{ "partId": string, "partName": string, "category": string, "price": number, "quantity": number, "isUncertain": boolean, "comment": string }. ' +
           '"isUncertain" = true when the match is ambiguous. "comment" explains uncertainty or is empty string. ' +

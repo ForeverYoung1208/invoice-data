@@ -38,7 +38,7 @@
 **Dependencies:** None (foundation subtask).
 
 **Estimated effort:** 0.5h
-**Spent:** 2h
+**Done. Spent:** 2h
 
 ---
 
@@ -67,7 +67,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 **Dependencies:** Subtask 6.1 (state schema, node interface).
 
 **Estimated effort:** 0.5h
-**Spent:** 1h
+**Done. Spent:** 1h
 
 ---
 
@@ -102,6 +102,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 **Dependencies:** Subtask 6.1 (state schema), Task 5 (LlmAdapter interface and OpenAICompatibleAdapter).
 
 **Estimated effort:** 2h
+**Done. Spent:** 3h
 
 ---
 
