@@ -128,7 +128,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 **Dependencies:** Subtask 6.3 (MatchPartsNode produces `matchedJobs` with `warningLevel` pre-populated).
 
 **Estimated effort:** 0.5h
-**Done. Spent:** 3h (including confidence logic refactoring. )
+**Spent:** 4h (including confidence logic refactoring. )
 ---
 
 ### Subtask 6.5 — GenerateOutputNode: delegate to output builders and save results
