@@ -5,7 +5,7 @@ import { JobsParser } from '../../parsers/JobsParser';
 import { PartsParser } from '../../parsers/PartsParser';
 import {
   IBaseNode,
-  IAtentTaskFileRef,
+  IAgentTaskFileRef,
   TInvoiceAgentState,
 } from '../state/annotation';
 
@@ -13,7 +13,7 @@ export class ParseNode implements IBaseNode {
   async execute(
     state: TInvoiceAgentState,
   ): Promise<Partial<TInvoiceAgentState>> {
-    const find = (role: ETaskFileRole): IAtentTaskFileRef | undefined =>
+    const find = (role: ETaskFileRole): IAgentTaskFileRef | undefined =>
       state.taskFiles.find((f) => f.role === role);
 
     const jobsFile = find(ETaskFileRole.JOBS);

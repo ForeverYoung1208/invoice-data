@@ -8,7 +8,7 @@ import {
 } from '../../parsers/types';
 import { IMatchedJob } from '../../output/types';
 
-export interface IAtentTaskFileRef {
+export interface IAgentTaskFileRef {
   role: ETaskFileRole;
   filePath: string;
   originalName: string;
@@ -20,7 +20,7 @@ export const InvoiceAgentStateAnnotation = Annotation.Root({
     reducer: (_old, newInstr) => newInstr,
     default: () => '',
   }),
-  taskFiles: Annotation<IAtentTaskFileRef[]>({
+  taskFiles: Annotation<IAgentTaskFileRef[]>({
     reducer: (_old, newFiles) => newFiles,
     default: () => [],
   }),
