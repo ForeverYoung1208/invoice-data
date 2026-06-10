@@ -54,4 +54,5 @@ next-env.d.ts
 
 # AI configs
 .kilo/
+.pi/
 

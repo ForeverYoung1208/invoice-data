@@ -7,6 +7,7 @@ import {
 
 import { TaskResultRepository } from '../db/repositories/TaskResultRepository';
 import { LlmAdapter } from '../llm/LlmAdapter';
+import { ConfigService } from '../services/ConfigService';
 import { TaskService } from '../services/TaskService';
 import { GenerateOutputNode } from './nodes/GenerateOutputNode';
 import { MatchPartsNode } from './nodes/MatchPartsNode';
@@ -17,6 +18,7 @@ import {
   InvoiceAgentStateAnnotation,
   TInvoiceAgentState,
 } from './state/annotation';
+import { OutputZipper } from '../output/OutputZipper';
 
 export class InvoiceAgent {
   private readonly graph: CompiledStateGraph<any, any, any>;
@@ -25,11 +27,17 @@ export class InvoiceAgent {
     private readonly taskService: TaskService,
     readonly llmAdapter: LlmAdapter,
     readonly taskResultRepository: TaskResultRepository,
+    readonly configService: ConfigService,
+    readonly outputZipper: OutputZipper,
   ) {
     const parseNode = new ParseNode();
     const matchNode = new MatchPartsNode(llmAdapter);
     const validateNode = new ValidateCompatibilityNode();
-    const generateNode = new GenerateOutputNode(taskResultRepository);
+    const generateNode = new GenerateOutputNode(
+      taskResultRepository,
+      configService,
+      outputZipper,
+    );
 
     const graph = new StateGraph(InvoiceAgentStateAnnotation)
       .addNode('parse', (s) => parseNode.execute(s))

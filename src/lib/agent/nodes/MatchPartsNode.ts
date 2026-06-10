@@ -3,8 +3,10 @@ import { LlmAdapter } from '../../llm/LlmAdapter';
 import { IJobRow, IPartRow } from '../../parsers/types';
 import { IMatchedJob, IMatchedPart } from '../../output/types';
 import { IBaseNode, TInvoiceAgentState } from '../state/annotation';
+import { Logger } from '../../logger';
 
 export class MatchPartsNode implements IBaseNode {
+  private readonly logger = new Logger('MatchPartsNode');
   constructor(private readonly llm: LlmAdapter) {}
 
   async execute(
@@ -28,15 +30,13 @@ export class MatchPartsNode implements IBaseNode {
         );
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        console.error(`[MatchPartsNode] job ${job.jobNumber} failed: ${msg}`);
+        this.logger.error(`job ${job.jobNumber} failed: ${msg}`);
         errors.push(`job ${job.jobNumber}: ${msg}`);
         matchedJobs.push(emptyJob(job));
       }
     }
 
-    console.log(
-      `[MatchPartsNode] ${matchedJobs.length} jobs matched, ${errors.length} errors`,
-    );
+    this.logger.info(`${matchedJobs.length} jobs matched, ${errors.length} errors`);
     return { matchedJobs, ...(errors.length ? { errors } : {}) };
   }
 

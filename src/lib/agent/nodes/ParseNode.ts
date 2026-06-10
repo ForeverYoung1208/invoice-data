@@ -1,3 +1,4 @@
+import { Logger } from '../../logger';
 import { ETaskFileRole } from '../../constants';
 import { ClientsParser } from '../../parsers/ClientsParser';
 import { DevicePartsParser } from '../../parsers/DevicePartsParser';
@@ -10,6 +11,7 @@ import {
 } from '../state/annotation';
 
 export class ParseNode implements IBaseNode {
+  private readonly logger = new Logger('ParseNode');
   async execute(
     state: TInvoiceAgentState,
   ): Promise<Partial<TInvoiceAgentState>> {
@@ -52,8 +54,8 @@ export class ParseNode implements IBaseNode {
       devices.length === 0 && 'devices',
     ].filter(Boolean) as string[];
 
-    console.log(
-      `[ParseNode] jobs=${jobs.length} clients=${clients.length} parts=${parts.length} devices=${devices.length}`,
+    this.logger.info(
+      `jobs=${jobs.length} clients=${clients.length} parts=${parts.length} devices=${devices.length}`,
     );
 
     if (empty.length > 0) {

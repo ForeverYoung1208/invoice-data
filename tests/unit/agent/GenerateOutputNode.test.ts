@@ -2,7 +2,9 @@ import fs, { existsSync, rmSync } from 'fs';
 import path, { join } from 'path';
 
 import { GenerateOutputNode } from '../../../src/lib/agent/nodes/GenerateOutputNode';
+import { OutputZipper } from '../../../src/lib/output/OutputZipper';
 import { TaskResultRepository } from '../../../src/lib/db/repositories/TaskResultRepository';
+import { ConfigService } from '../../../src/lib/services/ConfigService';
 import { TInvoiceAgentState } from '../../../src/lib/agent/state/annotation';
 import { createOutputDataFixture } from '../../fixtures/output-data';
 
@@ -18,6 +20,8 @@ const TEMPLATE_DIR = join(__dirname, '..', '..', 'fixtures', 'templates');
 
 const mockSave = jest.fn().mockResolvedValue(undefined);
 const mockRepo = { create: mockSave } as unknown as TaskResultRepository;
+const configService = new ConfigService();
+const outputZipper = new OutputZipper();
 
 const makeState = (): TInvoiceAgentState => {
   const fixture = createOutputDataFixture();
@@ -83,7 +87,7 @@ beforeEach(() => {
 
 describe('GenerateOutputNode integration', () => {
   it('creates a ZIP file on disk and returns zipPath in state', async () => {
-    const node = new GenerateOutputNode(mockRepo);
+    const node = new GenerateOutputNode(mockRepo, configService, outputZipper);
     const result = await node.execute(makeState());
 
     expect(result.errors).toBeUndefined();
@@ -93,7 +97,7 @@ describe('GenerateOutputNode integration', () => {
   });
 
   it('saves result to repository with taskId and zipPath', async () => {
-    const node = new GenerateOutputNode(mockRepo);
+    const node = new GenerateOutputNode(mockRepo, configService, outputZipper);
     const result = await node.execute(makeState());
 
     expect(mockSave).toHaveBeenCalledTimes(1);
@@ -105,7 +109,7 @@ describe('GenerateOutputNode integration', () => {
   });
 
   it('returns error in state when matchedJobs is empty', async () => {
-    const node = new GenerateOutputNode(mockRepo);
+    const node = new GenerateOutputNode(mockRepo, configService, outputZipper);
     const state = makeState();
     state.matchedJobs = [];
 

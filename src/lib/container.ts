@@ -28,4 +28,6 @@ export const invoiceAgent = new InvoiceAgent(
   taskService,
   llmAdapter,
   taskResultRepository,
+  configService,
+  outputZipper,
 );

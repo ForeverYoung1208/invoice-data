@@ -1,8 +1,10 @@
 import { IMatchedJob } from '../../output/types';
 import { IDevicePartRow } from '../../parsers/types';
+import { Logger } from '../../logger';
 import { IBaseNode, TInvoiceAgentState } from '../state/annotation';
 
 export class ValidateCompatibilityNode implements IBaseNode {
+  private readonly logger = new Logger('ValidateCompatibilityNode');
   execute(state: TInvoiceAgentState): Promise<Partial<TInvoiceAgentState>> {
     const matchedJobs = state.matchedJobs.map((job) =>
       this.validateJob(job, state.devices),
@@ -37,7 +39,7 @@ export class ValidateCompatibilityNode implements IBaseNode {
 
       if (isBlacklisted) {
         const msg = `Part "${part.partName}" (${part.partId}) is blacklisted for ${job.deviceType} ${job.deviceModel}`;
-        console.warn(`[ValidateCompatibilityNode] ${msg}`);
+        this.logger.warn(msg);
         warnings.push(msg);
         return { ...part, warningLevel: 1 };
       }

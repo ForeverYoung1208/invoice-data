@@ -1,13 +1,19 @@
 import { join } from 'path';
-
 import { TaskResultRepository } from '../../db/repositories/TaskResultRepository';
+import { Logger } from '../../logger';
 import { OutputZipper } from '../../output/OutputZipper';
 import { IClientInvoiceData, IOutputData } from '../../output/types';
 import { IClientRow } from '../../parsers/types';
+import { ConfigService } from '../../services/ConfigService';
 import { IBaseNode, TInvoiceAgentState } from '../state/annotation';
 
 export class GenerateOutputNode implements IBaseNode {
-  constructor(private readonly taskResultRepository: TaskResultRepository) {}
+  private readonly logger = new Logger('GenerateOutputNode');
+  constructor(
+    private readonly taskResultRepository: TaskResultRepository,
+    private readonly configService: ConfigService,
+    private readonly outputZipper: OutputZipper,
+  ) {}
 
   async execute(
     state: TInvoiceAgentState,
@@ -30,27 +36,23 @@ export class GenerateOutputNode implements IBaseNode {
         state.clients,
       );
 
-      const dataDir = process.env.DATA_DIR; // TODO: Move to the config service and add validation there.
-      if (!dataDir) throw new Error('DATA_DIR environment variable is not set');
-
-      const outputDir = join(dataDir, 'output', state.taskId);
-      const templatePath = join(dataDir, 'invoice_template.csv'); // TODO: Move to the config service and add validation there.
-
-      const zipper = new OutputZipper();
-      const zipPath = await zipper.assemble(
+      const { templatePath, dataDir, outputDir } =
+        this.configService.getConfig();
+      const outputDirPath = join(dataDir, outputDir, state.taskId);
+      const zipPath = await this.outputZipper.assemble(
         outputData,
         clientInvoices,
-        outputDir,
+        outputDirPath,
         templatePath,
       );
 
       await this.taskResultRepository.create(state.taskId, outputData, zipPath);
 
-      console.log(`[GenerateOutputNode] ZIP created at ${zipPath}`); // TODO: create a custom logger and use it.
+      this.logger.info(`ZIP created at ${zipPath}`);
       return { zipPath };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`[GenerateOutputNode] failed: ${msg}`); // TODO: create a custom logger and use it.
+      this.logger.error(`failed: ${msg}`);
       return { errors: [msg] };
     }
   }

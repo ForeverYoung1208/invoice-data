@@ -36,11 +36,7 @@
 - **Estimate:** 6h
 - **Notes:** StateGraph, 4 node classes, edges, integration test — most complex task
 - **Status:** In progress. Already spent 4 hours (state on 28.05.2026);
-
-### 6.2.1. Refactor: replace Cyrillic bracket-notation DTO access with typed English-key interfaces
-- **Estimate:** 0h (unplanned refactoring)
-- **Notes:** Added `parsers/mappers.ts` as single source of truth for CSV column → DTO key mapping. Rewrote all 4 parser interfaces with English keys. Updated all consumers (MatchPartsNode, TotalSheetBuilder, all parser tests).
-- **Status:** Completed. Spent: 0.5h
+- **Subtask 6.2.1 (Completed):** Refactor: replace Cyrillic bracket-notation DTO access with typed English-key interfaces. (Notes: Added `parsers/mappers.ts` as single source of truth for CSV column → DTO key mapping. Rewrote all 4 parser interfaces with English keys. Updated all consumers (MatchPartsNode, TotalSheetBuilder, all parser tests). Spent: 0.5h)
 
 ### 7. CSV output generation
 - **Estimate:** 4h
