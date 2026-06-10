@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~11.5h**
+**Completed: ~39h**
 
 ---
 
@@ -35,8 +35,7 @@
 ### 6. LangGraph agent — core pipeline
 - **Estimate:** 6h
 - **Notes:** StateGraph, 4 node classes, edges, integration test — most complex task
-- **Status:** In progress. Already spent 4 hours (state on 28.05.2026);
-- **Subtask 6.2.1 (Completed):** Refactor: replace Cyrillic bracket-notation DTO access with typed English-key interfaces. (Notes: Added `parsers/mappers.ts` as single source of truth for CSV column → DTO key mapping. Rewrote all 4 parser interfaces with English keys. Updated all consumers (MatchPartsNode, TotalSheetBuilder, all parser tests). Spent: 0.5h)
+- **Status:** Completed. Total spent: 15h (6.1: 2h, 6.2: 1h, 6.2.1: 0.5h, 6.3: 3h, 6.4: 4h, 6.5: 1h, 6.6: 2h, 6.7: 0.5h, 6.8: 1h)
 
 ### 7. CSV output generation
 - **Estimate:** 4h
@@ -46,6 +45,14 @@
 ### 8. Background worker wiring
 - **Estimate:** 3h
 - **Notes:** WorkerService, polling loop, status transitions, concurrently setup
+  Task 8 implementation:
+  
+  8.1. Fix the worker SELECT FOR UPDATE query (it's currently broken — queries tasks
+   table but uses entity class name)
+  8.2. Wire in InvoiceAgent into WorkerService
+  8.3. Add POST /api/tasks/[id]/process route that sets status to queued
+  8.4. Add process to apiRoutes
+
 
 ### 9. Review UI
 - **Estimate:** 4h

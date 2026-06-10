@@ -216,7 +216,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 **Dependencies:** Subtasks 6.2–6.5 (all node classes exist).
 
 **Estimated effort:** 1h
-
+**Done. Spent:** 2h
 ---
 
 ### Subtask 6.7 — Register `InvoiceAgent` in DI container
@@ -236,6 +236,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 **Dependencies:** Subtask 6.6 (`InvoiceAgent` class exists).
 
 **Estimated effort:** 0.25h
+**Done. Spent:** 0.5h
 
 ---
 
@@ -275,6 +276,7 @@ Keeping DB loading out of `ParseNode` makes the node deterministic and easy to t
 **Dependencies:** Subtask 6.7 (container registration), Task 7 (output classes tested separately).
 
 **Estimated effort:** 1.5h
+**Done. Spent:** 1h
 
 ---
 
