@@ -4,6 +4,7 @@ import {
   taskCreateSchema,
   taskDetailSchema,
   taskListSchema,
+  taskProcessedSchema,
   taskUpdateSchema,
 } from '../contracts/schemas/task.schema';
 import { csvRowsSchema, idSchema } from '../contracts/schemas/common.schema';
@@ -45,6 +46,11 @@ export const apiRoutes = {
       method: 'PATCH',
       bodySchema: taskUpdateSchema,
       responseSchema: idSchema,
+    }),
+    process: (id: string) => ({
+      url: `/api/tasks/${id}/process`,
+      method: 'POST',
+      responseSchema: taskProcessedSchema,
     }),
   },
   files: {

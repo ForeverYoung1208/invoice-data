@@ -90,3 +90,10 @@ export const taskUpdateSchema = taskDetailSchema
 
 export type TTaskCreateDto = z.infer<typeof taskCreateSchema>;
 export type TTaskUpdateDto = z.infer<typeof taskUpdateSchema>;
+
+export const taskProcessedSchema = z.object({
+  id: z.string(),
+  status: z.enum(ETaskStatus),
+});
+
+export type TTaskProcessedDto = z.infer<typeof taskProcessedSchema>;

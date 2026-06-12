@@ -45,6 +45,7 @@
 ### 8. Background worker wiring
 - **Estimate:** 3h
 - **Notes:** WorkerService, polling loop, status transitions, concurrently setup
+- **Status:** Completed. Spent: 0.5h
   Task 8 implementation:
   
   8.1. Fix the worker SELECT FOR UPDATE query (it's currently broken — queries tasks
