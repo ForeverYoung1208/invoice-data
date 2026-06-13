@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 
 import type { Task } from './Task';
-import { TResultJsonDto } from '../../contracts/schemas/task.schema';
+import type { TResultJsonDto } from '../../contracts/schemas/task.schema';
 
 @Entity('correction_logs')
 export class CorrectionLog {

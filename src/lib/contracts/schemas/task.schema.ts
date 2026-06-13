@@ -14,8 +14,10 @@ export const taskFileSchema = z.object({
   filePath: z.string(),
   createdAt: z.string(),
 });
+export type TTaskFileDto = z.infer<typeof taskFileSchema>;
 
 export const resultJsonSchema = z.looseObject({}); // Type: { [key: string]: unknown } TODO: make strict when tune up langGraph
+export type TResultJsonDto = z.infer<typeof resultJsonSchema>;
 
 export const taskCorrectionSchema = z.object({
   id: z.string(),
@@ -23,6 +25,7 @@ export const taskCorrectionSchema = z.object({
   createdAt: z.string(),
   resultSnapshotBefore: resultJsonSchema.nullable(),
 });
+export type TTaskCorrectionDto = z.infer<typeof taskCorrectionSchema>;
 
 export const taskResultSchema = z.object({
   id: z.string(),
@@ -30,6 +33,7 @@ export const taskResultSchema = z.object({
   zipPath: z.string().nullable(),
   createdAt: z.string(),
 });
+export type TTaskResultDto = z.infer<typeof taskResultSchema>;
 
 export const taskDetailSchema = z.object({
   id: z.string(),
@@ -42,6 +46,7 @@ export const taskDetailSchema = z.object({
   corrections: z.array(taskCorrectionSchema),
   errorMessage: z.string().nullable(),
 });
+export type TTaskDetailDto = z.infer<typeof taskDetailSchema>;
 
 export const taskCreatedSchema = z.object({
   id: z.string(),
@@ -56,15 +61,9 @@ export const taskListItemSchema = z.object({
   createdAt: z.string(),
   filesCount: z.number(),
 });
+export type TTaskListItemDto = z.infer<typeof taskListItemSchema>;
 
 export const taskListSchema = z.array(taskListItemSchema);
-
-export type TTaskFileDto = z.infer<typeof taskFileSchema>;
-export type TTaskCorrectionDto = z.infer<typeof taskCorrectionSchema>;
-export type TTaskResultDto = z.infer<typeof taskResultSchema>;
-export type TTaskDetailDto = z.infer<typeof taskDetailSchema>;
-export type TResultJsonDto = z.infer<typeof resultJsonSchema>;
-export type TTaskListItemDto = z.infer<typeof taskListItemSchema>;
 
 /**
  ******************
@@ -80,6 +79,7 @@ export const taskCreateSchema = taskDetailSchema.omit({
   corrections: true,
   errorMessage: true,
 });
+export type TTaskCreateDto = z.infer<typeof taskCreateSchema>;
 
 export const taskUpdateSchema = taskDetailSchema
   .omit({ corrections: true })
@@ -88,12 +88,10 @@ export const taskUpdateSchema = taskDetailSchema
     correction: z.string().optional(),
   });
 
-export type TTaskCreateDto = z.infer<typeof taskCreateSchema>;
 export type TTaskUpdateDto = z.infer<typeof taskUpdateSchema>;
 
 export const taskProcessedSchema = z.object({
   id: z.string(),
   status: z.enum(ETaskStatus),
 });
-
 export type TTaskProcessedDto = z.infer<typeof taskProcessedSchema>;

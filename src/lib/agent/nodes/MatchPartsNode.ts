@@ -36,7 +36,9 @@ export class MatchPartsNode implements IBaseNode {
       }
     }
 
-    this.logger.info(`${matchedJobs.length} jobs matched, ${errors.length} errors`);
+    this.logger.info(
+      `${matchedJobs.length} jobs matched, ${errors.length} errors`,
+    );
     return { matchedJobs, ...(errors.length ? { errors } : {}) };
   }
 
