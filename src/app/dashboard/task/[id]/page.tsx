@@ -174,7 +174,7 @@ export default function TaskDetailPage({
 
       <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8 space-y-6">
         {/* Task header */}
-        <TaskHeader task={task} />
+        <TaskHeader task={task} zipPath={latestResult?.zipPath} />
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>

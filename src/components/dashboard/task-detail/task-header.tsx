@@ -11,9 +11,10 @@ interface TaskHeaderProps {
     createdAt: string;
     updatedAt: string;
   };
+  zipPath?: string | null;
 }
 
-export function TaskHeader({ task }: TaskHeaderProps) {
+export function TaskHeader({ task, zipPath }: TaskHeaderProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
@@ -37,6 +38,8 @@ export function TaskHeader({ task }: TaskHeaderProps) {
           variant="outline"
           size="sm"
           className="border-slate-300 text-slate-700 hover:bg-slate-50 gap-1.5"
+          disabled={!zipPath}
+          onClick={() => window.open(`/api/tasks/${task.id}/download`, '_blank')}
         >
           <Download className="w-3.5 h-3.5" /> Download ZIP
         </Button>
