@@ -33,7 +33,7 @@ export class TaskService {
     const ds = await getGlobalDataSource();
     await ds.getRepository(Task).update(id, {
       status,
-      ...(errorMessage !== undefined ? { errorMessage } : {}),
+      errorMessage: errorMessage ?? null,
     });
   }
 

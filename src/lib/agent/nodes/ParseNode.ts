@@ -1,7 +1,7 @@
 import { join } from 'path';
 import { Logger } from '../../logger';
 import { ConfigService } from '../../services/ConfigService';
-import { ETaskFileRole } from '../../constants';
+import { ETaskFileRole, COMPLETED_JOB_STATUSES } from '../../constants';
 import { ClientsParser } from '../../parsers/ClientsParser';
 import { DevicePartsParser } from '../../parsers/DevicePartsParser';
 import { JobsParser } from '../../parsers/JobsParser';
@@ -63,14 +63,18 @@ export class ParseNode implements IBaseNode {
       devices.length === 0 && 'devices',
     ].filter(Boolean) as string[];
 
+    const completedJobs = jobs.filter((j) =>
+      (COMPLETED_JOB_STATUSES as readonly string[]).includes(j.status),
+    );
+
     this.logger.info(
-      `jobs=${jobs.length} clients=${clients.length} parts=${parts.length} devices=${devices.length}`,
+      `jobs=${jobs.length} (completed=${completedJobs.length}) clients=${clients.length} parts=${parts.length} devices=${devices.length}`,
     );
 
     if (empty.length > 0) {
       return { errors: empty.map((name) => `Empty file: ${name}`) };
     }
 
-    return { jobs, clients, parts, devices };
+    return { jobs: completedJobs, clients, parts, devices };
   }
 }
