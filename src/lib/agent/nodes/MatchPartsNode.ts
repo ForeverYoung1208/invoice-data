@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { LlmAdapter } from '../../llm/LlmAdapter';
-import { IJobRow, IPartRow } from '../../parsers/types';
+import { IDevicePartRow, IJobRow, IPartRow } from '../../parsers/types';
 import { IMatchedJob, IMatchedPart } from '../../output/types';
 import { IBaseNode, TInvoiceAgentState } from '../state/annotation';
 import { Logger } from '../../logger';
@@ -26,7 +26,12 @@ export class MatchPartsNode implements IBaseNode {
     for (const job of state.jobs) {
       try {
         matchedJobs.push(
-          await this.matchJob(job, state.parts, state.instructions),
+          await this.matchJob(
+            job,
+            state.parts,
+            state.devices,
+            state.instructions,
+          ),
         );
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -44,13 +49,14 @@ export class MatchPartsNode implements IBaseNode {
 
   private async matchJob(
     job: IJobRow,
-    catalog: IPartRow[],
+    partsCatalog: IPartRow[],
+    devicesCatalog: IDevicePartRow[],
     instructions: string,
   ): Promise<IMatchedJob> {
-    const catalogText = catalog
+    const catalogText = partsCatalog
       .map(
         (p) =>
-          `${p.partId} | ${p.name} | ${p.category} | ${p.salePrice}₴ | ${p.inStock}`,
+          `${p.partId} | ${p.name} | ${p.category} | ${p.salePrice} UAH | ${p.inStock}`,
       )
       .join('\n');
 
@@ -58,14 +64,16 @@ export class MatchPartsNode implements IBaseNode {
       {
         role: 'system' as const,
         content:
-          'You are a repair-shop invoicing assistant. Match spare parts from the catalog to the repair job. ' +
-          'When matching pay additional attention for the current job notes (they contain important information about the repair and spare parts that were used during repairing. ). ' +
-          'Also pay attention for typical spare parts and blacklisted spare parts for the device being repaired. ' +
-          'Also pay attention for availability of the spare parts you are going to choose. ' +
+          'You are a repair-shop invoicing assistant. Repairman did all necessary repairs and noted his work into notes field. ' +
+          'Your task is to understand which device was repaired, find it in the device catalog. ' +
+          'Then match spare parts from the spare parts catalog to the repair job based on "Notes" made by the repairman. ' +
+          'Pay attention to typical spare parts and blacklisted spare parts for the device being repaired. ' +
+          'Pay attention to availability of the spare parts you are going to choose. ' +
           'Return ONLY a raw JSON array (no markdown). Each element: ' +
           '{ "partId": string, "partName": string, "category": string, "price": number, "quantity": number, "compatibilityConfidence": number, "comment": string }. ' +
-          '"compatibilityConfidence" = 0.0–1.0, how confident you are this part is compatible with the device being repaired. ' +
-          '"comment" explains low confidence or is empty string. ' +
+          '"compatibilityConfidence" = 0.0-1.0, how confident you are this part is compatible with the device being repaired. ' +
+          '"comment" explains low confidence or is empty string. never made up any additional statements. Fill this field only if your confidence is low.' +
+          'Remember, your job is only to match devices and spare parts. Never make additional suggestions or statements except if you are not confident with spare parts compatibility. ' +
           (instructions ? `Extra instructions: ${instructions}` : ''),
       },
       {
@@ -73,7 +81,10 @@ export class MatchPartsNode implements IBaseNode {
         content:
           `Job: ${job.jobNumber} | Device: ${job.deviceType} ${job.model}\n` +
           `Fault: ${job.faultDescription}\nNotes: ${job.notes}\n\n` +
-          `Catalog:\n${catalogText}`,
+          `Devices catalog legend: deviceType | model | typicalParts | blacklistedParts\n` +
+          `Devices catalog:\n${devicesCatalog.map((d) => `${d.deviceType} | ${d.model} | ${d.typicalParts} | ${d.blacklistedParts}`).join('\n')}\n` +
+          `Spare parts catalog legend: partId | name | category | price | inStock\n` +
+          `Spare parts catalog:\n${catalogText}`,
       },
     ];
 

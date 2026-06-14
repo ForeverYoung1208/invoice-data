@@ -20,10 +20,9 @@ export class LlmAdapterFactory {
     if (LlmAdapterFactory.instance) {
       return LlmAdapterFactory.instance;
     }
-
-    const baseUrl = process.env.LLM_BASE_URL ?? 'http://localhost:4000/v1';
-    const apiKey = process.env.LLM_API_KEY;
-    const model = process.env.LLM_MODEL;
+    const baseUrl = process.env.LLM_BASE_URL ?? 'http://localhost:4000/v1'; // TODO: pick from configService
+    const apiKey = process.env.LLM_API_KEY; // TODO: pick from configService
+    const model = process.env.LLM_MODEL; // TODO: pick from configService
 
     if (!apiKey) {
       throw new Error('LLM_API_KEY environment variable is not set');

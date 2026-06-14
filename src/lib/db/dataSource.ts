@@ -27,28 +27,41 @@ function createDataSource(): DataSource {
   return new DataSource(ormConfigData);
 }
 
+// Serialize all getGlobalDataSource calls to prevent concurrent destroy/init races
+let initPromise: Promise<DataSource> | null = null;
+
 export async function getGlobalDataSource(): Promise<DataSource> {
-  // If entities changed (HMR replaced class references), tear down and rebuild
-  if (global.__dataSource && entitiesChanged()) {
-    if (global.__dataSource.isInitialized) {
-      await global.__dataSource.destroy();
+  if (initPromise) return initPromise;
+
+  initPromise = (async () => {
+    try {
+      // If entities changed (HMR replaced class references), tear down and rebuild
+      if (global.__dataSource && entitiesChanged()) {
+        if (global.__dataSource.isInitialized) {
+          await global.__dataSource.destroy();
+        }
+        global.__dataSource = undefined;
+        global.__dataSourceEntities = undefined;
+      }
+
+      if (!global.__dataSource) {
+        global.__dataSource = createDataSource();
+        global.__dataSourceEntities = [
+          ...((ormConfigData.entities as unknown[]) ?? []),
+        ];
+      }
+
+      if (!global.__dataSource.isInitialized) {
+        await global.__dataSource.initialize();
+      }
+
+      return global.__dataSource;
+    } finally {
+      initPromise = null;
     }
-    global.__dataSource = undefined;
-    global.__dataSourceEntities = undefined;
-  }
+  })();
 
-  if (!global.__dataSource) {
-    global.__dataSource = createDataSource();
-    global.__dataSourceEntities = [
-      ...((ormConfigData.entities as unknown[]) ?? []),
-    ];
-  }
-
-  if (!global.__dataSource.isInitialized) {
-    await global.__dataSource.initialize();
-  }
-
-  return global.__dataSource;
+  return initPromise;
 }
 
 const DataSourceInstance = new DataSource(ormConfigData);

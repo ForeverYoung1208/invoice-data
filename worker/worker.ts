@@ -60,18 +60,30 @@ class WorkerService {
   }
 
   start(): void {
-    const { pollIntervalMs } = this.configService.getConfig();
-    console.log('[worker] starting, polling every', pollIntervalMs, 'ms');
-    const poll = async () => {
-      try {
-        await this.processNext();
-      } catch (err) {
-        console.error('[worker] poll error:', err);
-      } finally {
-        setTimeout(() => void poll(), pollIntervalMs);
-      }
-    };
-    void poll();
+    // const { pollIntervalMs } = this.configService.getConfig();
+    // console.log('[worker] starting, polling every', pollIntervalMs, 'ms');
+    // const poll = async () => {
+    //   try {
+    //     await this.processNext();
+    //   } catch (err) {
+    //     console.error('[worker] poll error:', err);
+    //   } finally {
+    //     setTimeout(() => void poll(), pollIntervalMs);
+    //   }
+    // };
+    // void poll();
+
+    // --- debug run once
+    // Don't forget to revert the changes at the package.json: return --watch to worker:dev
+    console.log('[worker] debug run once');
+    console.log('process.argv:', process.env.LLM_MODEL);
+    void this.processNext()
+      .then(() => process.exit(0))
+      .catch((err) => {
+        console.error('[worker] error:', err);
+        process.exit(1);
+      });
+    // ---
   }
 }
 
