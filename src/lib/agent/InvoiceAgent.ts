@@ -30,7 +30,7 @@ export class InvoiceAgent {
     readonly configService: ConfigService,
     readonly outputZipper: OutputZipper,
   ) {
-    const parseNode = new ParseNode();
+    const parseNode = new ParseNode(configService);
     const matchNode = new MatchPartsNode(llmAdapter);
     const validateNode = new ValidateCompatibilityNode();
     const generateNode = new GenerateOutputNode(
@@ -59,7 +59,7 @@ export class InvoiceAgent {
 
     const taskFiles: IAgentTaskFileRef[] = task.files.map((f) => ({
       role: f.role,
-      filePath: f.filePath,
+      fileName: f.fileName,
       originalName: f.originalName,
     }));
 

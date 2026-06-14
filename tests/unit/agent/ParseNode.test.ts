@@ -15,22 +15,22 @@ const makeState = (
     : [
         {
           role: ETaskFileRole.JOBS,
-          filePath: path.join(FIXTURES, 'jobs.csv'),
+          fileName: path.join(FIXTURES, 'jobs.csv'),
           originalName: 'jobs.csv',
         },
         {
           role: ETaskFileRole.CLIENTS,
-          filePath: path.join(FIXTURES, 'clients.csv'),
+          fileName: path.join(FIXTURES, 'clients.csv'),
           originalName: 'clients.csv',
         },
         {
           role: ETaskFileRole.PARTS,
-          filePath: path.join(FIXTURES, 'parts.csv'),
+          fileName: path.join(FIXTURES, 'parts.csv'),
           originalName: 'parts.csv',
         },
         {
           role: ETaskFileRole.DEVICES,
-          filePath: path.join(FIXTURES, 'devices.csv'),
+          fileName: path.join(FIXTURES, 'devices.csv'),
           originalName: 'devices.csv',
         },
       ],
@@ -66,7 +66,7 @@ describe('ParseNode', () => {
     const state = makeState([
       {
         role: ETaskFileRole.JOBS,
-        filePath: path.join(FIXTURES, 'jobs.csv'),
+        fileName: path.join(FIXTURES, 'jobs.csv'),
         originalName: 'jobs.csv',
       },
     ]);
@@ -87,7 +87,7 @@ describe('ParseNode', () => {
     const state = makeState([
       {
         role: ETaskFileRole.JOBS,
-        filePath: path.join(
+        fileName: path.join(
           __dirname,
           '../../fixtures/edge_cases/empty_jobs.csv',
         ),
@@ -95,17 +95,17 @@ describe('ParseNode', () => {
       },
       {
         role: ETaskFileRole.CLIENTS,
-        filePath: path.join(FIXTURES, 'clients.csv'),
+        fileName: path.join(FIXTURES, 'clients.csv'),
         originalName: 'clients.csv',
       },
       {
         role: ETaskFileRole.PARTS,
-        filePath: path.join(FIXTURES, 'parts.csv'),
+        fileName: path.join(FIXTURES, 'parts.csv'),
         originalName: 'parts.csv',
       },
       {
         role: ETaskFileRole.DEVICES,
-        filePath: path.join(FIXTURES, 'devices.csv'),
+        fileName: path.join(FIXTURES, 'devices.csv'),
         originalName: 'devices.csv',
       },
     ]);

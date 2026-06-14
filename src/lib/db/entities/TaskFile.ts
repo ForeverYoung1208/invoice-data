@@ -20,7 +20,7 @@ export class TaskFile {
   role: ETaskFileRole;
 
   @Column({ type: 'varchar', length: 2048 })
-  filePath: string;
+  fileName: string;
 
   @Column({ type: 'varchar', length: 2048 })
   originalName: string;

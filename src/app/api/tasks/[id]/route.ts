@@ -112,7 +112,7 @@ export async function GET(
       files: files.map((f) => ({
         id: f.id,
         role: f.role,
-        filePath: f.filePath,
+        filePath: f.fileName,
         originalName: f.originalName,
         createdAt: f.createdAt.toISOString(),
       })),

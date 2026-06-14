@@ -56,13 +56,7 @@ export async function GET(
       );
     }
 
-    // Resolve the disk path.
-    // The filePath in DB is "/uploads/filename.csv"
-    // The actual file is at join(uploadDir, filename)
-    const diskPath = join(
-      uploadDir,
-      taskFile.filePath.replace('/uploads/', ''),
-    );
+    const diskPath = join(uploadDir, taskFile.fileName);
 
     const content = await readFile(diskPath, 'utf-8');
 

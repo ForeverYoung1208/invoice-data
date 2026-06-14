@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { taskService } from '@/lib/container';
+import { taskService, configService } from '@/lib/container';
 import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskFile } from '@/lib/db/entities/TaskFile';
 import { ETaskFileRole } from '@/lib/constants';
@@ -123,14 +123,7 @@ export async function POST(req: NextRequest) {
     const ds = await getGlobalDataSource();
     const taskFileRepo = ds.getRepository(TaskFile);
 
-    const uploadDir = process.env.DATA_DIR;
-
-    if (!uploadDir) {
-      return NextResponse.json(
-        { error: 'DATA_DIR environment variable is not set' },
-        { status: 500 },
-      );
-    }
+    const { dataDir: uploadDir } = configService.getConfig();
 
     // Ensure upload directory exists
     if (!existsSync(uploadDir)) {
@@ -161,7 +154,7 @@ export async function POST(req: NextRequest) {
           task,
           taskId: task.id,
           role,
-          filePath: `/uploads/${fileName}`,
+          fileName: fileName,
           originalName: file.name,
         });
 

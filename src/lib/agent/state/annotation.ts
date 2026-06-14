@@ -10,7 +10,7 @@ import { IMatchedJob } from '../../output/types';
 
 export interface IAgentTaskFileRef {
   role: ETaskFileRole;
-  filePath: string;
+  fileName: string;
   originalName: string;
 }
 

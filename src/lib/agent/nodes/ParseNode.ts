@@ -1,4 +1,6 @@
+import { join } from 'path';
 import { Logger } from '../../logger';
+import { ConfigService } from '../../services/ConfigService';
 import { ETaskFileRole } from '../../constants';
 import { ClientsParser } from '../../parsers/ClientsParser';
 import { DevicePartsParser } from '../../parsers/DevicePartsParser';
@@ -12,9 +14,12 @@ import {
 
 export class ParseNode implements IBaseNode {
   private readonly logger = new Logger('ParseNode');
+  constructor(private readonly configService: ConfigService) {}
+
   async execute(
     state: TInvoiceAgentState,
   ): Promise<Partial<TInvoiceAgentState>> {
+    const { dataDir } = this.configService.getConfig();
     const find = (role: ETaskFileRole): IAgentTaskFileRef | undefined =>
       state.taskFiles.find((f) => f.role === role);
 
@@ -34,13 +39,17 @@ export class ParseNode implements IBaseNode {
       return { errors: missing.map((r) => `Missing file for role: ${r}`) };
     }
 
+    // Compose full file paths by joining dataDir with each file's fileName
+    const composePath = (ref: IAgentTaskFileRef): string =>
+      join(dataDir, ref.fileName);
+
     let jobs, clients, parts, devices;
     try {
       [jobs, clients, parts, devices] = await Promise.all([
-        new JobsParser().parse(jobsFile!.filePath),
-        new ClientsParser().parse(clientsFile!.filePath),
-        new PartsParser().parse(partsFile!.filePath),
-        new DevicePartsParser().parse(devicesFile!.filePath),
+        new JobsParser().parse(composePath(jobsFile!)),
+        new ClientsParser().parse(composePath(clientsFile!)),
+        new PartsParser().parse(composePath(partsFile!)),
+        new DevicePartsParser().parse(composePath(devicesFile!)),
       ]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

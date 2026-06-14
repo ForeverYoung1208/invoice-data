@@ -52,7 +52,7 @@ export async function GET(
     }
 
     // Extract the filename part from the filePath (stripping /uploads/)
-    const fileName = taskFile.filePath.split('/').pop();
+    const fileName = taskFile.fileName.split('/').pop();
     if (!fileName) {
       return NextResponse.json({ error: 'Invalid file path' }, { status: 400 });
     }
