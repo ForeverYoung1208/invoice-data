@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~39h**
+**Completed: ~43h**
 
 ---
 
@@ -54,6 +54,11 @@
   8.3. Add POST /api/tasks/[id]/process route that sets status to queued
   8.4. Add process to apiRoutes
 
+
+### 8.1. Bug fixes and refactoring
+- **Estimate:** 4h
+- **Notes:** DataSource init race fix, MatchPartsNode prompt improvements, completed job status filtering, worker debug setup
+- **Status:** IN PROGRESS. Spent: 4h
 
 ### 9. Review UI
 - **Estimate:** 4h

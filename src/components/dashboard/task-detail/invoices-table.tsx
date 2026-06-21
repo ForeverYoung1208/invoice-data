@@ -8,86 +8,150 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-
-interface InvoiceLineItem {
-  qty: number | string;
-  description: string;
-  unit_price: number | string;
-}
-
-interface Invoice {
-  invoice_number: string;
-  client: string;
-  date: string;
-  total: number;
-  line_items?: InvoiceLineItem[];
-}
+import { IMatchedJob, IMatchedPart } from '@/lib/output/types';
 
 interface InvoicesTableProps {
-  invoices: Invoice[];
+  matchedJobs: IMatchedJob[];
 }
 
-export function InvoicesTable({ invoices }: InvoicesTableProps) {
+/** Returns a Tailwind row bg class based on the highest warningLevel among matched parts. */
+function rowBg(parts: IMatchedPart[]): string {
+  if (parts.length === 0) return '';
+  const max = Math.max(...parts.map((p) => p.warningLevel));
+  if (max >= 1) return 'bg-orange-50';
+  if (max > 0) return 'bg-yellow-50';
+  return '';
+}
+
+export function InvoicesTable({ matchedJobs }: InvoicesTableProps) {
+  // Group jobs by client
+  const grouped = matchedJobs.reduce<Record<string, IMatchedJob[]>>(
+    (acc, job) => {
+      (acc[job.clientName] ??= []).push(job);
+      return acc;
+    },
+    {},
+  );
+
+  if (Object.keys(grouped).length === 0) {
+    return (
+      <p className="text-sm text-slate-500 py-4 text-center">
+        No invoice data available
+      </p>
+    );
+  }
+
   return (
-    <div className="overflow-x-auto">
-      <Table className="text-sm">
-        <TableHeader>
-          <TableRow className="border-slate-200 hover:bg-transparent">
-            <TableHead className="text-slate-600 w-[120px]">
-              Invoice #
-            </TableHead>
-            <TableHead className="text-slate-600">Client</TableHead>
-            <TableHead className="text-slate-600 w-[120px]">Date</TableHead>
-            <TableHead className="text-slate-600 w-[120px] text-right">
-              Total
-            </TableHead>
-            <TableHead className="text-slate-600">Items</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {invoices && invoices.length > 0 ? (
-            invoices.map((invoice, index) => (
-              <TableRow
-                key={index}
-                className="border-slate-200 hover:bg-slate-50"
-              >
-                <TableCell className="font-mono text-slate-700">
-                  {invoice.invoice_number}
-                </TableCell>
-                <TableCell className="text-slate-800">
-                  {invoice.client}
-                </TableCell>
-                <TableCell className="text-slate-700">{invoice.date}</TableCell>
-                <TableCell className="text-slate-800 text-right font-medium">
-                  {invoice.total?.toFixed(2)}
-                </TableCell>
-                <TableCell className="text-slate-700">
-                  {invoice.line_items && invoice.line_items.length > 0 ? (
-                    <div className="space-y-1">
-                      {invoice.line_items.map((item, i) => (
-                        <div key={i} className="text-xs text-slate-600">
-                          {item.qty}x {item.description} @ {item.unit_price}
-                        </div >
-                      ))}
-                    </div>
+    <div className="space-y-6">
+      {Object.entries(grouped).map(([client, jobs]) => (
+        <div key={client}>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+            {client}
+          </h3>
+          <div className="rounded-md border border-slate-200 overflow-hidden">
+            <Table className="text-xs">
+              <TableHeader>
+                <TableRow className="bg-slate-50 hover:bg-slate-50">
+                  <TableHead className="text-slate-600">Job #</TableHead>
+                  <TableHead className="text-slate-600">Device</TableHead>
+                  <TableHead className="text-slate-600">Part</TableHead>
+                  <TableHead className="text-slate-600 w-[60px] text-right">
+                    Qty
+                  </TableHead>
+                  <TableHead className="text-slate-600 w-[80px] text-right">
+                    Price
+                  </TableHead>
+                  <TableHead className="text-slate-600">Note</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {jobs.map((job) =>
+                  job.matchedParts.length === 0 ? (
+                    <TableRow key={job.jobNumber} className="bg-yellow-50">
+                      <TableCell className="font-mono text-slate-700">
+                        {job.jobNumber}
+                      </TableCell>
+                      <TableCell className="text-slate-600">
+                        {job.deviceModel}
+                      </TableCell>
+                      <TableCell
+                        colSpan={4}
+                        className="text-slate-400 italic"
+                      >
+                        No parts matched
+                      </TableCell>
+                    </TableRow>
                   ) : (
-                    '-'
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell
-                colSpan={5}
-                className="text-center text-slate-500 py-4"
-              >
-                No invoice data available
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                    job.matchedParts.map((part, pi) => (
+                      <TableRow
+                        key={`${job.jobNumber}-${pi}`}
+                        className={rowBg(job.matchedParts)}
+                      >
+                        {pi === 0 && (
+                          <>
+                            <TableCell
+                              rowSpan={job.matchedParts.length}
+                              className="font-mono text-slate-700 align-top"
+                            >
+                              {job.jobNumber}
+                            </TableCell>
+                            <TableCell
+                              rowSpan={job.matchedParts.length}
+                              className="text-slate-600 align-top"
+                            >
+                              {job.deviceType} {job.deviceModel}
+                            </TableCell>
+                          </>
+                        )}
+                        <TableCell className="text-slate-800">
+                          {part.partName}
+                          {part.warningLevel >= 1 && (
+                            <span
+                              className="ml-1 text-orange-600"
+                              title="Blacklisted part"
+                            >
+                              ⚠
+                            </span>
+                          )}
+                          {part.warningLevel > 0 && part.warningLevel < 1 && (
+                            <span
+                              className="ml-1 text-yellow-600"
+                              title="Low confidence match"
+                            >
+                              ⚡
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-slate-700 text-right">
+                          {part.quantity}
+                        </TableCell>
+                        <TableCell className="text-slate-700 text-right font-medium">
+                          {part.price.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-slate-500 italic">
+                          {part.comment ?? ''}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ),
+                )}
+                {/* Client subtotal row */}
+                <TableRow className="bg-slate-50 font-medium">
+                  <TableCell colSpan={4} className="text-slate-600 text-right">
+                    Client total
+                  </TableCell>
+                  <TableCell className="text-slate-800 text-right">
+                    {jobs
+                      .reduce((sum, j) => sum + j.matchedTotal, 0)
+                      .toFixed(2)}
+                  </TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

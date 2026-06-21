@@ -9,6 +9,12 @@ import {
 } from '../contracts/schemas/task.schema';
 import { csvRowsSchema, idSchema } from '../contracts/schemas/common.schema';
 
+const replaceFileSchema = z.object({
+  id: z.string(),
+  role: z.string(),
+  originalName: z.string(),
+});
+
 export type TApiRoute<TBody = unknown, TRes = unknown> = (
   ...params: string[]
 ) => {
@@ -51,6 +57,11 @@ export const apiRoutes = {
       url: `/api/tasks/${id}/process`,
       method: 'POST',
       responseSchema: taskProcessedSchema,
+    }),
+    replaceFile: (id: string) => ({
+      url: `/api/tasks/${id}/replace-file`,
+      method: 'POST',
+      responseSchema: replaceFileSchema,
     }),
   },
   files: {

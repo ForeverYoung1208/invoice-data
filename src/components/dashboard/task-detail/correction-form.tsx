@@ -10,12 +10,14 @@ interface CorrectionFormProps {
   correctionText: string;
   setCorrectionText: (text: string) => void;
   onSubmit: () => void;
+  disabled?: boolean;
 }
 
 export function CorrectionForm({
   correctionText,
   setCorrectionText,
   onSubmit,
+  disabled = false,
 }: CorrectionFormProps) {
   return (
     <Card className="bg-white border-slate-200 shadow-sm">
@@ -35,6 +37,7 @@ export function CorrectionForm({
             onChange={(e) => setCorrectionText(e.target.value)}
             placeholder="e.g. The total for INV-2026-0042 is wrong. Recalculate from line items."
             className="bg-white border-slate-300 focus:border-blue-400 min-h-[80px] text-sm resize-none"
+            disabled={disabled}
           />
         </div>
         <Button
@@ -42,7 +45,7 @@ export function CorrectionForm({
           variant="outline"
           className="border-slate-300 text-slate-700 hover:bg-slate-50 gap-1.5"
           onClick={onSubmit}
-          disabled={!correctionText.trim()}
+          disabled={disabled || !correctionText.trim()}
         >
           <MessageSquarePlus className="w-3.5 h-3.5" /> Submit Correction
         </Button>

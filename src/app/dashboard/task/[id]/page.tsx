@@ -23,6 +23,7 @@ import { FilesTab } from '@/components/dashboard/task-detail/files-tab';
 import { CorrectionsTab } from '@/components/dashboard/task-detail/corrections-tab';
 import { InstructionsTab } from '@/components/dashboard/task-detail/instructions-tab';
 import { TaskFooter } from '@/components/dashboard/task-detail/task-footer';
+import { ReuploadPanel } from '@/components/dashboard/task-detail/reupload-panel';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { TTaskUpdateDto } from '@/lib/contracts/schemas/task.schema';
@@ -30,13 +31,17 @@ import { DATE_TIME_FORMAT, ETaskFileRole, ETaskStatus } from '@/lib/constants';
 import { useApi } from '../../../../lib/client/useApi';
 import { apiRoutes } from '../../../../lib/client/api-routes';
 
+const PROCESSING_STATUSES = new Set<ETaskStatus>([
+  ETaskStatus.QUEUED,
+  ETaskStatus.PROCESSING,
+]);
+
 export default function TaskDetailPage({
   params,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
   params: Promise<{ id: string }>;
 }) {
-  // Handle async params using React.use() as per Next.js 16.2.4 requirements
   const { id: taskId } = use(params);
 
   const router = useRouter();
@@ -47,6 +52,11 @@ export default function TaskDetailPage({
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['task', taskId],
     queryFn: () => useApi(apiRoutes.tasks.detail, { params: [taskId] }),
+    // Poll every 3 s while the task is being processed
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status && PROCESSING_STATUSES.has(status) ? 3000 : false;
+    },
   });
 
   const task = data
@@ -76,16 +86,23 @@ export default function TaskDetailPage({
   const latestResult =
     data?.results && data.results.length > 0 ? data.results[0] : null;
 
-  const result: any = latestResult?.resultJson ?? null;
+  const matchedJobs: any[] =
+    (latestResult?.resultJson as any)?.matchedJobs ?? [];
+
+  const isProcessing = task ? PROCESSING_STATUSES.has(task.status) : false;
 
   const taskPatchMutation = useMutation({
     mutationFn: (body: TTaskUpdateDto) =>
-      useApi(apiRoutes.tasks.patch, {
-        params: [taskId],
-        body,
-      }),
+      useApi(apiRoutes.tasks.patch, { params: [taskId], body }),
     onSuccess: async () => {
       setCorrectionText('');
+      await queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+    },
+  });
+
+  const taskProcessMutation = useMutation({
+    mutationFn: () => useApi(apiRoutes.tasks.process, { params: [taskId] }),
+    onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['task', taskId] });
     },
   });
@@ -95,9 +112,11 @@ export default function TaskDetailPage({
     onSuccess: () => router.push('/dashboard'),
   });
 
-  const handleSubmitCorrection = () => {
+  const handleSubmitCorrection = async () => {
     const correction = correctionText.trim();
-    taskPatchMutation.mutate({ correction });
+    await taskPatchMutation.mutateAsync({ correction });
+    // Re-queue so the worker picks up the correction
+    taskProcessMutation.mutate();
   };
 
   const handleApprove = () => {
@@ -105,7 +124,7 @@ export default function TaskDetailPage({
   };
 
   const handleReRun = () => {
-    taskPatchMutation.mutate({ status: ETaskStatus.QUEUED });
+    taskProcessMutation.mutate();
   };
 
   const handleDelete = () => {
@@ -176,6 +195,24 @@ export default function TaskDetailPage({
         {/* Task header */}
         <TaskHeader task={task} zipPath={latestResult?.zipPath} />
 
+        {/* Processing banner */}
+        {isProcessing && (
+          <div className="flex items-center gap-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+            <span>
+              Task is <strong>{task.status}</strong> — results will appear
+              automatically when processing completes.
+            </span>
+          </div>
+        )}
+
+        {/* Error message from worker */}
+        {task.status === ETaskStatus.FAILED && data?.errorMessage && (
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <strong>Processing failed:</strong> {data.errorMessage}
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-white border border-slate-200">
@@ -212,8 +249,13 @@ export default function TaskDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {result && result.invoices && result.invoices.length > 0 ? (
-                  <InvoicesTable invoices={result.invoices} />
+                {isProcessing ? (
+                  <div className="flex items-center justify-center gap-2 py-8 text-slate-400 text-sm">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing…
+                  </div>
+                ) : matchedJobs.length > 0 ? (
+                  <InvoicesTable matchedJobs={matchedJobs} />
                 ) : (
                   <p className="text-sm text-slate-500 py-4 text-center">
                     No invoice data available
@@ -227,6 +269,14 @@ export default function TaskDetailPage({
               correctionText={correctionText}
               setCorrectionText={setCorrectionText}
               onSubmit={() => void handleSubmitCorrection()}
+              disabled={isProcessing || taskPatchMutation.isPending}
+            />
+
+            {/* Re-upload panel */}
+            <ReuploadPanel
+              taskId={task.id}
+              disabled={isProcessing}
+              onReplaced={() => taskProcessMutation.mutate()}
             />
           </TabsContent>
 
@@ -246,6 +296,7 @@ export default function TaskDetailPage({
         onDelete={() => void handleDelete()}
         onReRun={() => void handleReRun()}
         onApprove={() => void handleApprove()}
+        disabled={isProcessing}
       />
     </div>
   );
