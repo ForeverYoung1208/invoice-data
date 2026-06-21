@@ -28,3 +28,6 @@ export const PART_UNCERTAINTY_THRESHOLD = 0.8;
 
 /** Job CSV statuses (Cyrillic) that are considered fully completed and eligible for invoicing */
 export const COMPLETED_JOB_STATUSES = ['Виконано'] as const;
+
+/** Raw CSV column key for the status field in jobs CSV files */
+export const JOB_STATUS_COLUMN = 'Статус';

@@ -58,11 +58,13 @@
 ### 8.1. Bug fixes and refactoring
 - **Estimate:** 4h
 - **Notes:** DataSource init race fix, MatchPartsNode prompt improvements, completed job status filtering, worker debug setup
-- **Status:** IN PROGRESS. Spent: 4h
+- **Status:** Completed. Spent: 4h
 
 ### 9. Review UI
 - **Estimate:** 4h
 - **Notes:** Results table, flags highlighting, download, correction panel, status polling
+- **Status:** IN PROGRESS. Spent: 3h
+
 
 ### 10. Correction node in LangGraph
 - **Estimate:** 3h
@@ -71,3 +73,7 @@
 ### 11. Task lifecycle & archive
 - **Estimate:** 2h
 - **Notes:** Complete/archive/delete, Archive tab, read-only view
+
+### 12. Deployment, CICD
+- **Estimate:** ??? not estimated yet
+- **Notes:** Docker, Docker Compose, CI/CD pipeline, deployment scripts

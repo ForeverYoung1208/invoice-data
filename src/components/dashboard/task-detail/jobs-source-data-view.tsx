@@ -10,17 +10,21 @@ import {
 } from '@/components/ui/table';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { COMPLETED_JOB_STATUSES } from '@/lib/constants';
 import { useApi } from '../../../lib/client/useApi';
 import { apiRoutes } from '../../../lib/client/api-routes';
 
 interface JobsSourceDataViewProps {
   fileId: string;
   taskId: string;
+  /** Raw CSV column key to treat as status (e.g. 'Статус') */
+  statusColumn: string;
 }
 
 export function JobsSourceDataView({
   fileId,
   taskId,
+  statusColumn,
 }: JobsSourceDataViewProps) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['task-file', taskId, fileId],
@@ -54,6 +58,12 @@ export function JobsSourceDataView({
     );
   }
 
+  function isCompleted(val: string): boolean {
+    return COMPLETED_JOB_STATUSES.includes(
+      val as (typeof COMPLETED_JOB_STATUSES)[number],
+    );
+  }
+
   return (
     <div className="rounded-md border border-slate-200 overflow-hidden">
       <Table>
@@ -69,15 +79,22 @@ export function JobsSourceDataView({
         </TableHeader>
         <TableBody>
           {data &&
-            data.map((row: any, i: number) => (
-              <TableRow key={i}>
-                {Object.values(row).map((val: any, j: number) => (
-                  <TableCell key={j} className="text-xs text-slate-700 py-1">
-                    {String(val)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
+            data.map((row: any, i: number) => {
+              const statusVal = String(row[statusColumn] ?? '');
+              const completed = isCompleted(statusVal);
+              return (
+                <TableRow key={i}>
+                  {Object.values(row).map((val: any, j: number) => (
+                    <TableCell
+                      key={j}
+                      className={`text-xs py-1 ${completed ? 'text-slate-700' : 'text-slate-400'}`}
+                    >
+                      {String(val)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              );
+            })}
         </TableBody>
       </Table>
     </div>

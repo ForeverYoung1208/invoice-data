@@ -4,8 +4,10 @@ import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskFile } from '@/lib/db/entities/TaskFile';
 import { TaskResult } from '@/lib/db/entities/TaskResult';
 import { CorrectionLog } from '@/lib/db/entities/CorrectionLog';
+import { idSchema, TId } from '@/lib/contracts/schemas/common.schema';
 import {
   taskDetailSchema,
+  taskUpdateSchema,
   TTaskDetailDto,
 } from '../../../../lib/contracts/schemas/task.schema';
 
@@ -93,14 +95,18 @@ export async function GET(
     const taskResultRepo = ds.getRepository(TaskResult);
     const correctionLogRepo = ds.getRepository(CorrectionLog);
 
-    const [files, results, corrections] = await Promise.all([
+    const [files, result, corrections] = await Promise.all([
       taskFileRepo.find({ where: { taskId: task.id } }),
-      taskResultRepo.find({ where: { taskId: task.id } }),
+      taskResultRepo.findOne({
+        where: { taskId: task.id },
+        order: { createdAt: 'DESC' },
+      }),
       correctionLogRepo.find({
         where: { taskId: task.id },
         order: { createdAt: 'DESC' },
       }),
     ]);
+    const results = result ? [result] : [];
 
     const taskDetail: TTaskDetailDto = {
       id: task.id,
@@ -148,7 +154,7 @@ export async function PATCH(
 ): Promise<NextResponse> {
   try {
     const { id } = await params;
-    const body = await req.json();
+    const body = taskUpdateSchema.parse(await req.json());
 
     const task = await taskService.findById(id);
     if (!task) {
@@ -170,10 +176,8 @@ export async function PATCH(
       await taskService.updateInstructions(id, body.instructions);
     }
 
-    return NextResponse.json(
-      { message: 'Task updated successfully' },
-      { status: 200 },
-    );
+    const response: TId = { id };
+    return NextResponse.json(idSchema.parse(response), { status: 200 });
   } catch (error) {
     console.error('Error updating task:', error);
     return NextResponse.json(
@@ -197,7 +201,8 @@ export async function DELETE(
 
     await taskService.delete(id);
 
-    return NextResponse.json({ message: 'Task deleted' }, { status: 200 });
+    const response: TId = { id };
+    return NextResponse.json(idSchema.parse(response), { status: 200 });
   } catch (error) {
     console.error('Error deleting task:', error);
     return NextResponse.json(

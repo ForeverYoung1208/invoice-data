@@ -28,7 +28,7 @@ export class TaskService {
   async updateStatus(
     id: string,
     status: ETaskStatus,
-    errorMessage?: string,
+    errorMessage?: string | null,
   ): Promise<void> {
     const ds = await getGlobalDataSource();
     await ds.getRepository(Task).update(id, {
@@ -37,7 +37,10 @@ export class TaskService {
     });
   }
 
-  async updateInstructions(id: string, instructions: string): Promise<void> {
+  async updateInstructions(
+    id: string,
+    instructions: string | null,
+  ): Promise<void> {
     const ds = await getGlobalDataSource();
     await ds.getRepository(Task).update(id, { instructions });
   }

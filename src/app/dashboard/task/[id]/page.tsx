@@ -27,7 +27,12 @@ import { ReuploadPanel } from '@/components/dashboard/task-detail/reupload-panel
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { TTaskUpdateDto } from '@/lib/contracts/schemas/task.schema';
-import { DATE_TIME_FORMAT, ETaskFileRole, ETaskStatus } from '@/lib/constants';
+import {
+  DATE_TIME_FORMAT,
+  ETaskFileRole,
+  ETaskStatus,
+  JOB_STATUS_COLUMN,
+} from '@/lib/constants';
 import { useApi } from '../../../../lib/client/useApi';
 import { apiRoutes } from '../../../../lib/client/api-routes';
 
@@ -233,7 +238,11 @@ export default function TaskDetailPage({
               </CardHeader>
               <CardContent>
                 {jobsFile ? (
-                  <JobsSourceDataView taskId={task.id} fileId={jobsFile.id} />
+                  <JobsSourceDataView
+                    taskId={task.id}
+                    fileId={jobsFile.id}
+                    statusColumn={JOB_STATUS_COLUMN}
+                  />
                 ) : (
                   <p className="text-sm text-slate-500 py-4 text-center">
                     No jobs file uploaded

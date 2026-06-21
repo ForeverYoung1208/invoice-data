@@ -67,6 +67,8 @@ export class MatchPartsNode implements IBaseNode {
           'You are a repair-shop invoicing assistant. Repairman did all necessary repairs and noted his work into notes field. ' +
           'Your task is to understand which device was repaired, find it in the device catalog. ' +
           'Then match spare parts from the spare parts catalog to the repair job based on "Notes" made by the repairman. ' +
+          'The amount of spare parts that you found matching must be exact the same as mentioned by the repairman. ' +
+          'If there are several spare parts which aligns with a single repairman`s mentined one, choose the most appropriate one. ' +
           'Pay attention to typical spare parts and blacklisted spare parts for the device being repaired. ' +
           'Pay attention to availability of the spare parts you are going to choose. ' +
           'Return ONLY a raw JSON array (no markdown). Each element: ' +
