@@ -57,6 +57,10 @@ export const InvoiceAgentStateAnnotation = Annotation.Root({
     reducer: (_left, right) => right,
     default: () => null,
   }),
+  pendingCorrection: Annotation<string>({
+    reducer: (_left, right) => right,
+    default: () => '',
+  }),
 });
 
 export interface IBaseNode {
