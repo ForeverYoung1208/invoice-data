@@ -21,11 +21,11 @@ export function TaskFooter({
   completed = false,
 }: TaskFooterProps) {
   return (
-    <footer className="border-t border-slate-200 bg-white px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
+    <footer className="pointer-events-auto flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm">
       <Button
         variant="ghost"
         size="sm"
-        className="text-red-600 hover:text-red-700 hover:bg-red-50 gap-1.5"
+        className="text-red-600 hover:bg-red-50 hover:text-red-700 gap-1.5"
         onClick={onDelete}
       >
         <Trash2 className="w-4 h-4" /> Delete Task
@@ -53,7 +53,7 @@ export function TaskFooter({
             </Button>
             <Button
               size="sm"
-              className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+              className="gap-1.5 bg-green-600 text-white hover:bg-green-700"
               onClick={onApprove}
               disabled={disabled}
             >

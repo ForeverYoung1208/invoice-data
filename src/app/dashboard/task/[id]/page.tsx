@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, ChevronLeft, Loader2 } from 'lucide-react';
-import { useState, use } from 'react';
+import { createPortal } from 'react-dom';
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -52,7 +53,12 @@ export default function TaskDetailPage({
   const router = useRouter();
   const [correctionText, setCorrectionText] = useState('');
   const [activeTab, setActiveTab] = useState('results');
+  const [footerHost, setFooterHost] = useState<HTMLElement | null>(null);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setFooterHost(document.body);
+  }, []);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['task', taskId],
@@ -204,7 +210,10 @@ export default function TaskDetailPage({
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-8 space-y-6">
+      <main
+        className="flex-1 max-w-4xl mx-auto w-full px-6 pt-8 space-y-6"
+        style={{ paddingBottom: '12rem' }}
+      >
         {/* Task header */}
         <TaskHeader task={task} zipPath={latestResult?.zipPath} />
 
@@ -312,15 +321,33 @@ export default function TaskDetailPage({
         </Tabs>
       </main>
 
-      {/* Bottom action bar */}
-      <TaskFooter
-        onDelete={() => void handleDelete()}
-        onReRun={() => void handleReRun()}
-        onApprove={() => void handleApprove()}
-        onReturnToReview={() => taskReturnToReviewMutation.mutate()}
-        disabled={isProcessing}
-        completed={isCompleted}
-      />
+      {footerHost
+        ? createPortal(
+            <div
+              className="z-30 border-t border-slate-200/70 bg-slate-50/95 pt-4 shadow-[0_-12px_24px_rgba(15,23,42,0.04)] backdrop-blur-sm"
+              style={{
+                position: 'fixed',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                top: 'auto',
+                backgroundColor: 'rgba(248, 250, 252, 0.97)',
+              }}
+            >
+              <div className="mx-auto w-full max-w-4xl px-6 pb-6">
+                <TaskFooter
+                  onDelete={() => void handleDelete()}
+                  onReRun={() => void handleReRun()}
+                  onApprove={() => void handleApprove()}
+                  onReturnToReview={() => taskReturnToReviewMutation.mutate()}
+                  disabled={isProcessing}
+                  completed={isCompleted}
+                />
+              </div>
+            </div>,
+            footerHost,
+          )
+        : null}
     </div>
   );
 }
