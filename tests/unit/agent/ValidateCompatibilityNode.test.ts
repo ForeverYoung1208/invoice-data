@@ -48,6 +48,7 @@ const makeState = (
   warnings: [],
   errors: [],
   zipPath: null,
+  pendingCorrection: '',
 });
 
 describe('ValidateCompatibilityNode', () => {

@@ -24,6 +24,9 @@ export class CorrectionLog {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  appliedAt: Date | null;
+
   @ManyToOne('Task', 'corrections', { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'taskId' })
   task: Task;

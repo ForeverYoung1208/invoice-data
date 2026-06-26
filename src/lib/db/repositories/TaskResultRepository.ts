@@ -21,4 +21,9 @@ export class TaskResultRepository {
     await repo.save(entity);
     return entity;
   }
+
+  async findLatestByTaskId(taskId: string): Promise<TaskResult | null> {
+    const repo = await this.repo();
+    return repo.findOne({ where: { taskId }, order: { createdAt: 'DESC' } });
+  }
 }

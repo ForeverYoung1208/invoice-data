@@ -17,8 +17,8 @@ class WorkerService {
   async processNext(): Promise<void> {
     const ds = await getGlobalDataSource();
 
-    const taskId = await ds.transaction(async (em) => {
-      const task = await em
+    const taskId = await ds.transaction(async (entityManager) => {
+      const task = await entityManager
         .createQueryBuilder(Task, 'task')
         .where('task.status = :status', { status: ETaskStatus.QUEUED })
         .setLock('pessimistic_write_or_fail')
@@ -29,7 +29,9 @@ class WorkerService {
         return null;
       }
 
-      await em.update(Task, task.id, { status: ETaskStatus.PROCESSING });
+      await entityManager.update(Task, task.id, {
+        status: ETaskStatus.PROCESSING,
+      });
       console.log(`[worker] picked up task ${task.id}`);
       return task.id;
     });
@@ -60,29 +62,31 @@ class WorkerService {
   }
 
   start(): void {
-    // const { pollIntervalMs } = this.configService.getConfig();
-    // console.log('[worker] starting, polling every', pollIntervalMs, 'ms');
-    // const poll = async () => {
-    //   try {
-    //     await this.processNext();
-    //   } catch (err) {
-    //     console.error('[worker] poll error:', err);
-    //   } finally {
-    //     setTimeout(() => void poll(), pollIntervalMs);
-    //   }
-    // };
-    // void poll();
+    // --- constant pooling
+    const { pollIntervalMs } = this.configService.getConfig();
+    console.log('[worker] starting, polling every', pollIntervalMs, 'ms');
+    const poll = async () => {
+      try {
+        await this.processNext();
+      } catch (err) {
+        console.error('[worker] poll error:', err);
+      } finally {
+        setTimeout(() => void poll(), pollIntervalMs);
+      }
+    };
+    void poll();
 
-    // --- debug run once
+    // --- Debug single execution.
+    // if you want to debug run once comment out the lines after the constant pooling and until this comment and remove watch flag from the package JSON
     // Don't forget to revert the changes at the package.json: return --watch to worker:dev
-    console.log('[worker] debug run once');
-    console.log('process.argv:', process.env.LLM_MODEL);
-    void this.processNext()
-      .then(() => process.exit(0))
-      .catch((err) => {
-        console.error('[worker] error:', err);
-        process.exit(1);
-      });
+    // console.log('[worker] debug run once');
+    // console.log('process.argv:', process.env.LLM_MODEL);
+    // void this.processNext()
+    //   .then(() => process.exit(0))
+    //   .catch((err) => {
+    //     console.error('[worker] error:', err);
+    //     process.exit(1);
+    //   });
     // ---
   }
 }

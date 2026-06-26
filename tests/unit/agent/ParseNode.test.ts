@@ -2,6 +2,18 @@ import path from 'path';
 import { ParseNode } from '../../../src/lib/agent/nodes/ParseNode';
 import { ETaskFileRole } from '../../../src/lib/constants';
 import { TInvoiceAgentState } from '../../../src/lib/agent/state/annotation';
+import { ConfigService } from '../../../src/lib/services/ConfigService';
+
+// Fixture paths are absolute — mock dataDir as '' so join('', absPath) = absPath
+const mockConfigService = {
+  getConfig: () => ({
+    env: 'test',
+    dataDir: '',
+    templatePath: '',
+    outputDir: '',
+    pollIntervalMs: 1000,
+  }),
+} as unknown as ConfigService;
 
 const FIXTURES = path.join(__dirname, '../../fixtures/mock-data');
 
@@ -42,13 +54,14 @@ const makeState = (
   warnings: [],
   errors: [],
   zipPath: null,
+  pendingCorrection: '',
 });
 
 describe('ParseNode', () => {
   let node: ParseNode;
 
   beforeEach(() => {
-    node = new ParseNode();
+    node = new ParseNode(mockConfigService);
   });
 
   it('parses all 4 CSV files and returns populated arrays', async () => {

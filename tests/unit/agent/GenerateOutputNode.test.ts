@@ -62,6 +62,7 @@ const makeState = (): TInvoiceAgentState => {
     warnings: [],
     errors: [],
     zipPath: null,
+    pendingCorrection: '',
   };
 };
 

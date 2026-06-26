@@ -130,6 +130,7 @@ function makeConfigService(): ConfigService {
     dataDir: path.resolve(__dirname, '..', '..', 'fixtures'),
     templatePath: TEMPLATE_PATH,
     outputDir: 'agent-output',
+    pollIntervalMs: 1000,
   });
   return svc;
 }

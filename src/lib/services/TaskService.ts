@@ -2,6 +2,7 @@ import { getGlobalDataSource } from '../db/dataSource';
 import { Task } from '../db/entities/Task';
 import { ETaskStatus } from '../constants';
 import { CorrectionLog } from '../db/entities/CorrectionLog';
+import { IsNull } from 'typeorm';
 
 export class TaskService {
   async create(): Promise<Task> {
@@ -48,11 +49,23 @@ export class TaskService {
   async addCorrection(taskId: string, message: string): Promise<void> {
     const ds = await getGlobalDataSource();
     const correctionLogRepo = ds.getRepository(CorrectionLog);
-    const correction = correctionLogRepo.create({
-      taskId,
-      message,
-    });
+    const correction = correctionLogRepo.create({ taskId, message });
     await correctionLogRepo.save(correction);
+  }
+
+  async loadPendingCorrection(taskId: string): Promise<CorrectionLog | null> {
+    const ds = await getGlobalDataSource();
+    return ds.getRepository(CorrectionLog).findOne({
+      where: { taskId, appliedAt: IsNull() },
+      order: { createdAt: 'ASC', id: 'ASC' },
+    });
+  }
+
+  async markCorrectionApplied(correctionId: string): Promise<void> {
+    const ds = await getGlobalDataSource();
+    await ds
+      .getRepository(CorrectionLog)
+      .update(correctionId, { appliedAt: new Date() });
   }
 
   async delete(id: string): Promise<void> {
