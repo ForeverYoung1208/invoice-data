@@ -15,7 +15,7 @@ import { OutputZipper } from './output/OutputZipper';
 
 export const configService = new ConfigService();
 export const authService = new AuthService();
-export const taskService = new TaskService();
+export const taskService = new TaskService(configService);
 export const taskResultRepository = new TaskResultRepository();
 export const llmAdapter = LlmAdapterFactory.create();
 

@@ -95,6 +95,7 @@ export default function TaskDetailPage({
     (latestResult?.resultJson as any)?.matchedJobs ?? [];
 
   const isProcessing = task ? PROCESSING_STATUSES.has(task.status) : false;
+  const isCompleted = task?.status === ETaskStatus.COMPLETED;
 
   const taskPatchMutation = useMutation({
     mutationFn: (body: TTaskUpdateDto) =>
@@ -115,6 +116,13 @@ export default function TaskDetailPage({
   const taskDeleteMutation = useMutation({
     mutationFn: () => useApi(apiRoutes.tasks.delete, { params: [taskId] }),
     onSuccess: () => router.push('/dashboard'),
+  });
+
+  const taskReturnToReviewMutation = useMutation({
+    mutationFn: () => useApi(apiRoutes.tasks.returnToReview, { params: [taskId] }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+    },
   });
 
   const handleSubmitCorrection = async () => {
@@ -274,19 +282,23 @@ export default function TaskDetailPage({
             </Card>
 
             {/* Correction form */}
-            <CorrectionForm
-              correctionText={correctionText}
-              setCorrectionText={setCorrectionText}
-              onSubmit={() => void handleSubmitCorrection()}
-              disabled={isProcessing || taskPatchMutation.isPending}
-            />
+            {!isCompleted && (
+              <CorrectionForm
+                correctionText={correctionText}
+                setCorrectionText={setCorrectionText}
+                onSubmit={() => void handleSubmitCorrection()}
+                disabled={isProcessing || taskPatchMutation.isPending}
+              />
+            )}
 
             {/* Re-upload panel */}
-            <ReuploadPanel
-              taskId={task.id}
-              disabled={isProcessing}
-              onReplaced={() => taskProcessMutation.mutate()}
-            />
+            {!isCompleted && (
+              <ReuploadPanel
+                taskId={task.id}
+                disabled={isProcessing}
+                onReplaced={() => taskProcessMutation.mutate()}
+              />
+            )}
           </TabsContent>
 
           {/* ── Files tab ── */}
@@ -305,7 +317,9 @@ export default function TaskDetailPage({
         onDelete={() => void handleDelete()}
         onReRun={() => void handleReRun()}
         onApprove={() => void handleApprove()}
+        onReturnToReview={() => taskReturnToReviewMutation.mutate()}
         disabled={isProcessing}
+        completed={isCompleted}
       />
     </div>
   );

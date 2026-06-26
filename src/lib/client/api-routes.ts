@@ -63,6 +63,11 @@ export const apiRoutes = {
       method: 'POST',
       responseSchema: replaceFileSchema,
     }),
+    returnToReview: (id: string) => ({
+      url: `/api/tasks/${id}/return-to-review`,
+      method: 'POST',
+      responseSchema: idSchema,
+    }),
   },
   files: {
     rows: (taskId: string, fileId: string) => ({

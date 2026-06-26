@@ -1,10 +1,16 @@
 import { getGlobalDataSource } from '../db/dataSource';
 import { Task } from '../db/entities/Task';
+import { TaskFile } from '../db/entities/TaskFile';
+import { TaskResult } from '../db/entities/TaskResult';
 import { ETaskStatus } from '../constants';
 import { CorrectionLog } from '../db/entities/CorrectionLog';
 import { IsNull } from 'typeorm';
+import { unlink } from 'fs/promises';
+import { join } from 'path';
+import { ConfigService } from './ConfigService';
 
 export class TaskService {
+  constructor(private readonly configService: ConfigService) {}
   async create(): Promise<Task> {
     const ds = await getGlobalDataSource();
     const task = ds
@@ -70,6 +76,23 @@ export class TaskService {
 
   async delete(id: string): Promise<void> {
     const ds = await getGlobalDataSource();
+    await ds.getRepository(Task).delete(id);
+  }
+
+  async deleteWithFiles(id: string): Promise<void> {
+    const ds = await getGlobalDataSource();
+    const { dataDir } = this.configService.getConfig();
+
+    const [files, result] = await Promise.all([
+      ds.getRepository(TaskFile).find({ where: { taskId: id } }),
+      ds.getRepository(TaskResult).findOne({ where: { taskId: id }, order: { createdAt: 'DESC' } }),
+    ]);
+
+    await Promise.all([
+      ...files.map((f) => unlink(join(dataDir, f.fileName)).catch(() => {})),
+      result?.zipPath ? unlink(result.zipPath).catch(() => {}) : Promise.resolve(),
+    ]);
+
     await ds.getRepository(Task).delete(id);
   }
 }

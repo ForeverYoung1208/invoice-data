@@ -199,7 +199,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
-    await taskService.delete(id);
+    await taskService.deleteWithFiles(id);
 
     const response: TId = { id };
     return NextResponse.json(idSchema.parse(response), { status: 200 });
