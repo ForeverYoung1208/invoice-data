@@ -19,6 +19,3 @@ In `InvoiceAgent.ts`: add the `correct` node, add a conditional edge from `START
 
 **10.4 — Pass `pendingCorrection` from the worker**
 Add `appliedAt: Date | null` column to `CorrectionLog` entity + migration. In `InvoiceAgent.run()`: fetch the oldest unprocessed correction (`ORDER BY createdAt ASC`, `appliedAt IS NULL`, `LIMIT 1`) and pass it as `pendingCorrection` in the initial state. After a successful run, set `appliedAt = NOW()` on that correction record. This FIFO approach handles the case where the user submits a new correction while the previous one is still being processed.
-
-**10.5 — Unit tests for `CorrectionNode`**
-Test file `tests/unit/CorrectionNode.test.ts` with mocked `LlmAdapter`. Cover: remove job, add part, change quantity.

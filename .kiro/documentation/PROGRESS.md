@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~44h**
+**Completed: ~50h**
 
 ---
 
@@ -69,8 +69,8 @@
 ### 10. Correction node in LangGraph
 - **Estimate:** 3h
 - **Notes:** CorrectionNode, LLM prompt, result JSON update, unit tests
+- **Status:** Completed. Spent: 6h
 
-### 11. Task lifecycle & archive
 - **Estimate:** 2h
 - **Notes:** Complete/archive/delete, Archive tab, read-only view
 
