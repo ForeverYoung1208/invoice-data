@@ -7,8 +7,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 # **THIS IS EDUCATIONAL PROJECT** Explain your decisions, patterns, mechanisms regarding next.js and landggrah functionality
 User has experience with nest.js and react.js applications and uses this project to study and learn next.js and langGraph usage patterns and best practices. So provide user with explanations of basics of next.js, langGraph interfaces, usage patterns/cases  and architecture decisions.
 
-# Application description: ./.kiro/documentation/IDEA.md  - Read it first.
+# The developer uses speech to text system. Keep that in mind and interpret ambiguous phrases by context or if you have doubts it is better to ask user to clarify.
 
+# Application description: ./.kiro/documentation/IDEA.md  - Read it first.
 
 # Progress tracking: ./.kiro/documentation/PROGRESS.md - Use it when you need to read or update progress.
 

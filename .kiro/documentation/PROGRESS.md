@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~43h**
+**Completed: ~44h**
 
 ---
 
@@ -62,8 +62,8 @@
 
 ### 9. Review UI
 - **Estimate:** 4h
-- **Notes:** Results table, flags highlighting, download, correction panel, status polling
-- **Status:** IN PROGRESS. Spent: 3h
+- **Notes:** Results table, flags highlighting, download, correction panel, status polling; Needs additional review after correction node implementation.
+- **Status:** Completed. Spent: 4h
 
 
 ### 10. Correction node in LangGraph
@@ -73,6 +73,10 @@
 ### 11. Task lifecycle & archive
 - **Estimate:** 2h
 - **Notes:** Complete/archive/delete, Archive tab, read-only view
+
+### 11.1. Review UI
+- **Estimate:** 4h
+- **Notes:** additional UI review after finishing all tasks 
 
 ### 12. Deployment, CICD
 - **Estimate:** ??? not estimated yet
