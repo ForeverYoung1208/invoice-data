@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~44h**
+**Completed: ~47h**
 
 ---
 
@@ -27,7 +27,7 @@
 - **Estimate:** 2h
 - **Status:** Completed. Spent: 1.5h
 
-### 5.1. Refactor task-detail UI data flow with TanStack Query
+### 5.A. Refactor task-detail UI data flow with TanStack Query
 - **Estimate:** 0h (unexpected refactoring)
 - **Notes:** Refactored task-detail UI to use TanStack Query for data fetching and caching, used as next.js and tanStack learning material;
 - **Status:** Completed. Spent: 8h
@@ -55,7 +55,7 @@
   8.4. Add process to apiRoutes
 
 
-### 8.1. Bug fixes and refactoring
+### 8.A. Bug fixes and refactoring
 - **Estimate:** 4h
 - **Notes:** DataSource init race fix, MatchPartsNode prompt improvements, completed job status filtering, worker debug setup
 - **Status:** Completed. Spent: 4h
@@ -75,9 +75,10 @@
 - **Estimate:** 2h
 - **Notes:** Complete/archive/delete, Archive tab, read-only view
 
-### 11.1. Review UI
+### 11.A. Review UI
 - **Estimate:** 4h
 - **Notes:** additional UI review after finishing all tasks 
+- **Status:** in progress. Spent: 3h
 
 ### 12. Deployment, CICD
 - **Estimate:** ??? not estimated yet
