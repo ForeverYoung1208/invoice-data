@@ -21,6 +21,12 @@ export class Task {
   status: ETaskStatus;
 
   @Column({ type: 'text', nullable: true })
+  taskRef: string | null;
+
+  @Column({ type: 'date', nullable: true })
+  taskDate: string | null;
+
+  @Column({ type: 'text', nullable: true })
   instructions: string | null;
 
   @Column({ type: 'text', nullable: true })

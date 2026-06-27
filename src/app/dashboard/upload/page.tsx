@@ -67,14 +67,14 @@ const ROLE_COLORS: Record<string, string> = {
 export default function UploadPage() {
   const router = useRouter();
   const [uploadSlots, setUploadSlots] = useState<UploadSlot[]>(UPLOAD_SLOTS);
-  const [jobRef, setJobRef] = useState(() => {
+  const [taskRef, setTaskRef] = useState(() => {
     const today = new Date();
     return `JOB-${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
       2,
       '0',
     )}-${String(today.getDate()).padStart(2, '0')}-001`;
   });
-  const [jobDate, setJobDate] = useState(
+  const [taskDate, setTaskDate] = useState(
     new Date().toISOString().split('T')[0],
   );
   const [instructions, setInstructions] = useState('');
@@ -216,8 +216,8 @@ export default function UploadPage() {
 
     try {
       const formData = new FormData();
-      formData.append('jobRef', jobRef);
-      formData.append('jobDate', jobDate);
+      formData.append('taskRef', taskRef);
+      formData.append('taskDate', taskDate);
       const normalizedInstructions = instructions.trim();
       if (normalizedInstructions) {
         formData.append('instructions', normalizedInstructions);
@@ -283,34 +283,34 @@ export default function UploadPage() {
         <Card className="bg-white border-slate-200 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm text-slate-600 font-medium">
-              Job Information
+              Task Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="jobRef" className="text-slate-700 text-sm">
-                  Job Reference
+                <Label htmlFor="taskRef" className="text-slate-700 text-sm">
+                  Task Reference
                 </Label>
                 <Input
-                  id="jobRef"
-                  value={jobRef}
-                  onChange={(e) => setJobRef(e.target.value)}
+                  id="taskRef"
+                  value={taskRef}
+                  onChange={(e) => setTaskRef(e.target.value)}
                   placeholder="JOB-2026-05-05-001"
                   className="bg-white border-slate-300 focus:border-blue-400"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="jobDate" className="text-slate-700 text-sm">
+                <Label htmlFor="taskDate" className="text-slate-700 text-sm">
                   Date
                 </Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
-                    id="jobDate"
+                    id="taskDate"
                     type="date"
-                    value={jobDate}
-                    onChange={(e) => setJobDate(e.target.value)}
+                    value={taskDate}
+                    onChange={(e) => setTaskDate(e.target.value)}
                     className="bg-white border-slate-300 focus:border-blue-400 pl-10"
                   />
                 </div>

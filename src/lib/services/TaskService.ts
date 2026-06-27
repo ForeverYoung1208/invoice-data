@@ -11,11 +11,16 @@ import { ConfigService } from './ConfigService';
 
 export class TaskService {
   constructor(private readonly configService: ConfigService) {}
-  async create(): Promise<Task> {
+  async create(
+    taskRef?: string | null,
+    taskDate?: string | null,
+  ): Promise<Task> {
     const ds = await getGlobalDataSource();
-    const task = ds
-      .getRepository(Task)
-      .create({ status: ETaskStatus.UPLOADED });
+    const task = ds.getRepository(Task).create({
+      status: ETaskStatus.UPLOADED,
+      taskRef: taskRef ?? null,
+      taskDate: taskDate ?? null,
+    });
     return ds.getRepository(Task).save(task);
   }
 

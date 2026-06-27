@@ -117,6 +117,8 @@ export async function GET(
     const taskDetail: TTaskDetailDto = {
       id: task.id,
       status: task.status,
+      taskRef: task.taskRef ?? null,
+      taskDate: task.taskDate ?? null,
       instructions: task.instructions ?? null,
       errorMessage: task.errorMessage ?? null,
       createdAt: task.createdAt.toISOString(),

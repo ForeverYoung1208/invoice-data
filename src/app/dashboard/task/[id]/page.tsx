@@ -81,6 +81,8 @@ export default function TaskDetailPage({
         status: data.status,
         createdAt: dayjs(data.createdAt).format(DATE_TIME_FORMAT),
         updatedAt: dayjs(data.updatedAt).format(DATE_TIME_FORMAT),
+        taskRef: data.taskRef,
+        taskDate: data.taskDate,
       }
     : null;
 

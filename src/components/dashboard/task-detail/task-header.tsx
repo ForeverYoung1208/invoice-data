@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, Download } from 'lucide-react';
+import { Calendar, Clock, Download } from 'lucide-react';
 
 interface TaskHeaderProps {
   task: {
@@ -10,6 +10,8 @@ interface TaskHeaderProps {
     status: string;
     createdAt: string;
     updatedAt: string;
+    taskRef: string | null;
+    taskDate: string | null;
   };
   zipPath?: string | null;
 }
@@ -31,6 +33,16 @@ export function TaskHeader({ task, zipPath }: TaskHeaderProps) {
           <span className="flex items-center gap-1">
             <Clock className="w-3 h-3" /> Updated {task.updatedAt}
           </span>
+          {task.taskRef && (
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" /> Reference: {task.taskRef}
+            </span>
+          )}
+          {task.taskDate && (
+            <span className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" /> {task.taskDate}
+            </span>
+          )}
         </div>
       </div>
       <div className="flex gap-2">

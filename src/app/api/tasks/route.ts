@@ -27,13 +27,13 @@ import { TTaskListItemDto } from '../../../lib/contracts/schemas/task.schema';
  *           schema:
  *             type: object
  *             properties:
- *               jobRef:
+ *               taskRef:
  *                 type: string
- *                 description: Job reference number
- *               jobDate:
+ *                 description: Task reference number
+ *               taskDate:
  *                 type: string
  *                 format: date
- *                 description: Job date
+ *                 description: Task date
  *               instructions:
  *                 type: string
  *                 description: Custom instructions for the job
@@ -75,6 +75,8 @@ export async function GET() {
           status: task.status,
           createdAt: task.createdAt.toISOString(),
           filesCount: files.length,
+          taskRef: task.taskRef ?? null,
+          taskDate: task.taskDate ?? null,
         };
       }),
     );
@@ -94,8 +96,8 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
 
-    const jobRef = formData.get('jobRef') as string | null;
-    const jobDate = formData.get('jobDate') as string | null;
+    const taskRef = (formData.get('taskRef') as string | null) || null;
+    const taskDate = (formData.get('taskDate') as string | null) || null;
     const rawInstructions = formData.get('instructions') as string | null;
     const instructions = rawInstructions?.trim() || null;
 
@@ -113,7 +115,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create task
-    const task = await taskService.create();
+    const task = await taskService.create(taskRef, taskDate);
 
     // Update task with instructions if provided
     if (instructions) {
@@ -167,8 +169,8 @@ export async function POST(req: NextRequest) {
       {
         id: task.id,
         status: task.status,
-        jobRef,
-        jobDate,
+        taskRef: task.taskRef,
+        taskDate: task.taskDate,
         instructions,
         filesCount: filesToSave.filter((f) => f.file).length,
       },

@@ -79,6 +79,7 @@ function TaskTable({
           <TableHeader>
             <TableRow className="border-slate-200 hover:bg-transparent">
               <TableHead className="text-slate-600">Task ID</TableHead>
+              <TableHead className="text-slate-600">Reference</TableHead>
               <TableHead className="text-slate-600">Status</TableHead>
               <TableHead className="text-slate-600">Files</TableHead>
               <TableHead className="text-slate-600">Created</TableHead>
@@ -90,14 +91,14 @@ function TaskTable({
           <TableBody>
             {isLoading ? (
               <TableRow className="border-slate-200">
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={6} className="text-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin text-slate-300 mx-auto" />
                 </TableCell>
               </TableRow>
             ) : tasks.length === 0 ? (
               <TableRow className="border-slate-200">
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="text-center py-8 text-slate-500"
                 >
                   {emptyMessage}
@@ -116,6 +117,9 @@ function TaskTable({
                     >
                       {task.id.slice(0, 8)}...
                     </Link>
+                  </TableCell>
+                  <TableCell className="text-slate-600">
+                    {task.taskRef || '—'}
                   </TableCell>
                   <TableCell>
                     <Badge className={STATUS_STYLES[task.status]}>

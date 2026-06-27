@@ -40,6 +40,8 @@ export const taskDetailSchema = z.object({
   status: z.enum(ETaskStatus),
   createdAt: z.string(),
   updatedAt: z.string(),
+  taskRef: z.string().nullable(),
+  taskDate: z.string().nullable(),
   instructions: z.string().max(1000).nullable(),
   files: z.array(taskFileSchema),
   results: z.array(taskResultSchema),
@@ -53,6 +55,8 @@ export const taskCreatedSchema = z.object({
   status: z.enum(ETaskStatus),
   instructions: z.string().nullable(),
   filesCount: z.number(),
+  taskRef: z.string().nullable(),
+  taskDate: z.string().nullable(),
 });
 
 export const taskListItemSchema = z.object({
@@ -60,6 +64,8 @@ export const taskListItemSchema = z.object({
   status: z.enum(ETaskStatus),
   createdAt: z.string(),
   filesCount: z.number(),
+  taskRef: z.string().nullable(),
+  taskDate: z.string().nullable(),
 });
 export type TTaskListItemDto = z.infer<typeof taskListItemSchema>;
 
