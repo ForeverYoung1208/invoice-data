@@ -21,7 +21,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Trash2, Eye, FileText, LogOut, Loader2 } from 'lucide-react';
+import {
+  Plus,
+  Trash2,
+  Eye,
+  Undo2,
+  CheckCircle2,
+  FileText,
+  LogOut,
+  Loader2,
+} from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import dayjs from 'dayjs';
@@ -35,8 +44,7 @@ const STATUS_STYLES: Record<ETaskStatus, string> = {
   [ETaskStatus.PROCESSING]:
     'bg-amber-50 text-amber-700 border border-amber-200',
   [ETaskStatus.REVIEW]: 'bg-purple-50 text-purple-700 border border-purple-200',
-  [ETaskStatus.COMPLETED]:
-    'bg-green-50 text-green-700 border border-green-200',
+  [ETaskStatus.COMPLETED]: 'bg-green-50 text-green-700 border border-green-200',
   [ETaskStatus.FAILED]: 'bg-red-50 text-red-700 border border-red-200',
 };
 
@@ -46,6 +54,8 @@ interface TaskTableProps {
   isLoading: boolean;
   emptyMessage: string;
   onDelete: (id: string) => void;
+  onReturnToReview?: (id: string) => void;
+  onApprove?: (id: string) => void;
 }
 
 function TaskTable({
@@ -54,6 +64,8 @@ function TaskTable({
   isLoading,
   emptyMessage,
   onDelete,
+  onReturnToReview,
+  onApprove,
 }: TaskTableProps): ReactElement {
   return (
     <Card className="bg-white border-slate-200 shadow-sm">
@@ -127,6 +139,28 @@ function TaskTable({
                           <Eye className="w-4 h-4" />
                         </Button>
                       </Link>
+                      {onReturnToReview && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-amber-600 hover:text-amber-700"
+                          onClick={() => void onReturnToReview(task.id)}
+                          title="Return to review"
+                        >
+                          <Undo2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                      {onApprove && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-green-600 hover:text-green-700"
+                          onClick={() => void onApprove(task.id)}
+                          title="Approve"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -182,9 +216,38 @@ export default function DashboardPage(): ReactElement {
     },
   });
 
+  const taskReturnToReviewMutation = useMutation({
+    mutationFn: (id: string) =>
+      useApi(apiRoutes.tasks.returnToReview, { params: [id] }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
   const handleDelete = (id: string) => {
     if (!confirm('Are you sure you want to delete this task?')) return;
     taskDeleteMutation.mutate(id);
+  };
+
+  const handleReturnToReview = (id: string) => {
+    if (!confirm('Return this task to review status?')) return;
+    taskReturnToReviewMutation.mutate(id);
+  };
+
+  const taskApproveMutation = useMutation({
+    mutationFn: (id: string) =>
+      useApi(apiRoutes.tasks.patch, {
+        params: [id],
+        body: { status: ETaskStatus.COMPLETED },
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+
+  const handleApprove = (id: string) => {
+    if (!confirm('Approve this task and mark as completed?')) return;
+    taskApproveMutation.mutate(id);
   };
 
   return (
@@ -276,6 +339,7 @@ export default function DashboardPage(): ReactElement {
               : 'No active tasks.'
           }
           onDelete={handleDelete}
+          onApprove={handleApprove}
         />
 
         <TaskTable
@@ -284,6 +348,7 @@ export default function DashboardPage(): ReactElement {
           isLoading={isLoading}
           emptyMessage="No completed tasks yet."
           onDelete={handleDelete}
+          onReturnToReview={handleReturnToReview}
         />
       </main>
     </div>
