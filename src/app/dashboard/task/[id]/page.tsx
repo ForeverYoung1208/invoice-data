@@ -107,6 +107,7 @@ export default function TaskDetailPage({
 
   const isProcessing = task ? PROCESSING_STATUSES.has(task.status) : false;
   const isCompleted = task?.status === ETaskStatus.COMPLETED;
+  const isUploaded = task?.status === ETaskStatus.UPLOADED;
   const canEditInstructions = task
     ? INSTRUCTIONS_EDITABLE_STATUSES.has(task.status)
     : false;
@@ -371,6 +372,8 @@ export default function TaskDetailPage({
                   onReturnToReview={() => taskReturnToReviewMutation.mutate()}
                   disabled={isProcessing}
                   completed={isCompleted}
+                  runLabel={isUploaded ? 'Run task' : 'Re-run'}
+                  approveDisabled={isUploaded}
                 />
               </div>
             </div>,

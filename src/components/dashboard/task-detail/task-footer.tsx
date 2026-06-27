@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, RotateCcw, Trash2, Undo2 } from 'lucide-react';
+import { CheckCircle2, Play, RotateCcw, Trash2, Undo2 } from 'lucide-react';
 
 interface TaskFooterProps {
   onDelete: () => void;
@@ -10,6 +10,8 @@ interface TaskFooterProps {
   onReturnToReview: () => void;
   disabled?: boolean;
   completed?: boolean;
+  runLabel?: string;
+  approveDisabled?: boolean;
 }
 
 export function TaskFooter({
@@ -19,7 +21,11 @@ export function TaskFooter({
   onReturnToReview,
   disabled = false,
   completed = false,
+  runLabel = 'Re-run',
+  approveDisabled = false,
 }: TaskFooterProps) {
+  const RunIcon = runLabel === 'Run task' ? Play : RotateCcw;
+
   return (
     <footer className="pointer-events-auto flex w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-6 py-4 shadow-sm">
       <Button
@@ -49,13 +55,13 @@ export function TaskFooter({
               onClick={onReRun}
               disabled={disabled}
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Re-run
+              <RunIcon className="w-3.5 h-3.5" /> {runLabel}
             </Button>
             <Button
               size="sm"
               className="gap-1.5 bg-green-600 text-white hover:bg-green-700"
               onClick={onApprove}
-              disabled={disabled}
+              disabled={disabled || approveDisabled}
             >
               <CheckCircle2 className="w-3.5 h-3.5" /> Approve
             </Button>
