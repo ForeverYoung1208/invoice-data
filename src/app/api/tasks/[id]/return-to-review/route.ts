@@ -39,7 +39,9 @@ export async function POST(
 
     if (task.status !== ETaskStatus.COMPLETED) {
       return NextResponse.json(
-        { error: `Task cannot be returned to review from status: ${task.status}` },
+        {
+          error: `Task cannot be returned to review from status: ${task.status}`,
+        },
         { status: 409 },
       );
     }

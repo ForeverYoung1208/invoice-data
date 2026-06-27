@@ -85,12 +85,16 @@ export class TaskService {
 
     const [files, result] = await Promise.all([
       ds.getRepository(TaskFile).find({ where: { taskId: id } }),
-      ds.getRepository(TaskResult).findOne({ where: { taskId: id }, order: { createdAt: 'DESC' } }),
+      ds
+        .getRepository(TaskResult)
+        .findOne({ where: { taskId: id }, order: { createdAt: 'DESC' } }),
     ]);
 
     await Promise.all([
       ...files.map((f) => unlink(join(dataDir, f.fileName)).catch(() => {})),
-      result?.zipPath ? unlink(result.zipPath).catch(() => {}) : Promise.resolve(),
+      result?.zipPath
+        ? unlink(result.zipPath).catch(() => {})
+        : Promise.resolve(),
     ]);
 
     await ds.getRepository(Task).delete(id);

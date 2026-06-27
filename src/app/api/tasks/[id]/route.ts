@@ -5,11 +5,17 @@ import { TaskFile } from '@/lib/db/entities/TaskFile';
 import { TaskResult } from '@/lib/db/entities/TaskResult';
 import { CorrectionLog } from '@/lib/db/entities/CorrectionLog';
 import { idSchema, TId } from '@/lib/contracts/schemas/common.schema';
+import { ETaskStatus } from '@/lib/constants';
 import {
   taskDetailSchema,
   taskUpdateSchema,
   TTaskDetailDto,
 } from '../../../../lib/contracts/schemas/task.schema';
+
+const INSTRUCTIONS_EDITABLE_STATUSES = new Set<ETaskStatus>([
+  ETaskStatus.UPLOADED,
+  ETaskStatus.REVIEW,
+]);
 
 /**
  * @swagger
@@ -173,7 +179,17 @@ export async function PATCH(
 
     // 3. Handle instructions update if provided
     if (body.instructions !== undefined) {
-      await taskService.updateInstructions(id, body.instructions);
+      if (!INSTRUCTIONS_EDITABLE_STATUSES.has(task.status)) {
+        return NextResponse.json(
+          {
+            error: `Task-wide instructions cannot be edited from status: ${task.status}`,
+          },
+          { status: 409 },
+        );
+      }
+
+      const instructions = body.instructions?.trim() || null;
+      await taskService.updateInstructions(id, instructions);
     }
 
     const response: TId = { id };

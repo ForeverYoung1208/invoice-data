@@ -42,6 +42,11 @@ const PROCESSING_STATUSES = new Set<ETaskStatus>([
   ETaskStatus.PROCESSING,
 ]);
 
+const INSTRUCTIONS_EDITABLE_STATUSES = new Set<ETaskStatus>([
+  ETaskStatus.UPLOADED,
+  ETaskStatus.REVIEW,
+]);
+
 export default function TaskDetailPage({
   params,
 }: {
@@ -102,6 +107,9 @@ export default function TaskDetailPage({
 
   const isProcessing = task ? PROCESSING_STATUSES.has(task.status) : false;
   const isCompleted = task?.status === ETaskStatus.COMPLETED;
+  const canEditInstructions = task
+    ? INSTRUCTIONS_EDITABLE_STATUSES.has(task.status)
+    : false;
 
   const taskPatchMutation = useMutation({
     mutationFn: (body: TTaskUpdateDto) =>
@@ -125,7 +133,19 @@ export default function TaskDetailPage({
   });
 
   const taskReturnToReviewMutation = useMutation({
-    mutationFn: () => useApi(apiRoutes.tasks.returnToReview, { params: [taskId] }),
+    mutationFn: () =>
+      useApi(apiRoutes.tasks.returnToReview, { params: [taskId] }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+    },
+  });
+
+  const instructionsMutation = useMutation({
+    mutationFn: (instructions: string | null) =>
+      useApi(apiRoutes.tasks.patch, {
+        params: [taskId],
+        body: { instructions },
+      }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['task', taskId] });
     },
@@ -243,7 +263,9 @@ export default function TaskDetailPage({
             <TabsTrigger value="corrections">
               Corrections ({corrections.length})
             </TabsTrigger>
-            <TabsTrigger value="instructions">Instructions</TabsTrigger>
+            <TabsTrigger value="instructions">
+              Task-wide Instructions
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="results" className="space-y-4 mt-4">
@@ -317,7 +339,14 @@ export default function TaskDetailPage({
           <CorrectionsTab corrections={corrections} />
 
           {/* ── Instructions tab ── */}
-          <InstructionsTab />
+          <InstructionsTab
+            instructions={data?.instructions ?? null}
+            canEdit={canEditInstructions}
+            isSaving={instructionsMutation.isPending}
+            onSave={async (instructions) => {
+              await instructionsMutation.mutateAsync(instructions);
+            }}
+          />
         </Tabs>
       </main>
 

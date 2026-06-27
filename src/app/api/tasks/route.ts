@@ -96,7 +96,8 @@ export async function POST(req: NextRequest) {
 
     const jobRef = formData.get('jobRef') as string | null;
     const jobDate = formData.get('jobDate') as string | null;
-    const instructions = formData.get('instructions') as string | null;
+    const rawInstructions = formData.get('instructions') as string | null;
+    const instructions = rawInstructions?.trim() || null;
 
     const jobsFile = formData.get('jobs') as File | null;
     const clientsFile = formData.get('clients') as File | null;

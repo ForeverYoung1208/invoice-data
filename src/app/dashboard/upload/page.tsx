@@ -218,8 +218,9 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append('jobRef', jobRef);
       formData.append('jobDate', jobDate);
-      if (instructions) {
-        formData.append('instructions', instructions);
+      const normalizedInstructions = instructions.trim();
+      if (normalizedInstructions) {
+        formData.append('instructions', normalizedInstructions);
       }
 
       uploadSlots.forEach((slot) => {

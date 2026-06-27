@@ -40,7 +40,7 @@ export const taskDetailSchema = z.object({
   status: z.enum(ETaskStatus),
   createdAt: z.string(),
   updatedAt: z.string(),
-  instructions: z.string().nullable(),
+  instructions: z.string().max(1000).nullable(),
   files: z.array(taskFileSchema),
   results: z.array(taskResultSchema),
   corrections: z.array(taskCorrectionSchema),
