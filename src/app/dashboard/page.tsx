@@ -24,18 +24,130 @@ import {
 import { Plus, Trash2, Eye, FileText, LogOut, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
-import { ETaskStatus } from '../../lib/constants';
+import dayjs from 'dayjs';
+import { DATE_TIME_FORMAT, ETaskStatus } from '../../lib/constants';
+import type { TTaskListItemDto } from '../../lib/contracts/schemas/task.schema';
+import type { ReactElement } from 'react';
 
 const STATUS_STYLES: Record<ETaskStatus, string> = {
-  uploaded: 'bg-slate-100 text-slate-700 border border-slate-300',
-  queued: 'bg-blue-50 text-blue-700 border border-blue-200',
-  processing: 'bg-amber-50 text-amber-700 border border-amber-200',
-  review: 'bg-purple-50 text-purple-700 border border-purple-200',
-  completed: 'bg-green-50 text-green-700 border border-green-200',
-  failed: 'bg-red-50 text-red-700 border border-red-200',
+  [ETaskStatus.UPLOADED]: 'bg-slate-100 text-slate-700 border border-slate-300',
+  [ETaskStatus.QUEUED]: 'bg-blue-50 text-blue-700 border border-blue-200',
+  [ETaskStatus.PROCESSING]:
+    'bg-amber-50 text-amber-700 border border-amber-200',
+  [ETaskStatus.REVIEW]: 'bg-purple-50 text-purple-700 border border-purple-200',
+  [ETaskStatus.COMPLETED]:
+    'bg-green-50 text-green-700 border border-green-200',
+  [ETaskStatus.FAILED]: 'bg-red-50 text-red-700 border border-red-200',
 };
 
-export default function DashboardPage() {
+interface TaskTableProps {
+  title: string;
+  tasks: TTaskListItemDto[];
+  isLoading: boolean;
+  emptyMessage: string;
+  onDelete: (id: string) => void;
+}
+
+function TaskTable({
+  title,
+  tasks,
+  isLoading,
+  emptyMessage,
+  onDelete,
+}: TaskTableProps): ReactElement {
+  return (
+    <Card className="bg-white border-slate-200 shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm text-slate-600 font-medium">
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-slate-200 hover:bg-transparent">
+              <TableHead className="text-slate-600">Task ID</TableHead>
+              <TableHead className="text-slate-600">Status</TableHead>
+              <TableHead className="text-slate-600">Files</TableHead>
+              <TableHead className="text-slate-600">Created</TableHead>
+              <TableHead className="text-slate-600 text-right">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow className="border-slate-200">
+                <TableCell colSpan={5} className="text-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-slate-300 mx-auto" />
+                </TableCell>
+              </TableRow>
+            ) : tasks.length === 0 ? (
+              <TableRow className="border-slate-200">
+                <TableCell
+                  colSpan={5}
+                  className="text-center py-8 text-slate-500"
+                >
+                  {emptyMessage}
+                </TableCell>
+              </TableRow>
+            ) : (
+              tasks.map((task) => (
+                <TableRow
+                  key={task.id}
+                  className="border-slate-200 hover:bg-slate-50"
+                >
+                  <TableCell className="font-mono text-sm text-slate-700">
+                    <Link
+                      href={`/dashboard/task/${task.id}`}
+                      className="hover:underline"
+                    >
+                      {task.id.slice(0, 8)}...
+                    </Link>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={STATUS_STYLES[task.status]}>
+                      {task.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-slate-600">
+                    {task.filesCount}
+                  </TableCell>
+                  <TableCell className="text-slate-600 text-sm">
+                    {dayjs(task.createdAt).format(DATE_TIME_FORMAT)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Link href={`/dashboard/task/${task.id}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-slate-600 hover:text-slate-900"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => void onDelete(task.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function DashboardPage(): ReactElement {
   const queryClient = useQueryClient();
 
   const {
@@ -54,6 +166,13 @@ export default function DashboardPage() {
     status,
     count: tasks.filter((t) => t.status === status).length,
   }));
+
+  const activeTasks = tasks.filter(
+    (task) => task.status !== ETaskStatus.COMPLETED,
+  );
+  const completedTasks = tasks.filter(
+    (task) => task.status === ETaskStatus.COMPLETED,
+  );
 
   const taskDeleteMutation = useMutation({
     mutationFn: (id: string) =>
@@ -147,88 +266,25 @@ export default function DashboardPage() {
               ))}
         </div>
 
-        {/* Task table */}
-        <Card className="bg-white border-slate-200 shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-slate-200 hover:bg-transparent">
-                <TableHead className="text-slate-600">Task ID</TableHead>
-                <TableHead className="text-slate-600">Status</TableHead>
-                <TableHead className="text-slate-600">Files</TableHead>
-                <TableHead className="text-slate-600">Created</TableHead>
-                <TableHead className="text-slate-600 text-right">
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow className="border-slate-200">
-                  <TableCell colSpan={5} className="text-center py-8">
-                    <Loader2 className="w-6 h-6 animate-spin text-slate-300 mx-auto" />
-                  </TableCell>
-                </TableRow>
-              ) : tasks.length === 0 ? (
-                <TableRow className="border-slate-200">
-                  <TableCell
-                    colSpan={5}
-                    className="text-center py-8 text-slate-500"
-                  >
-                    No tasks yet. Create your first task!
-                  </TableCell>
-                </TableRow>
-              ) : (
-                tasks.map((task) => (
-                  <TableRow
-                    key={task.id}
-                    className="border-slate-200 hover:bg-slate-50"
-                  >
-                    <TableCell className="font-mono text-sm text-slate-700">
-                      <Link
-                        href={`/dashboard/task/${task.id}`}
-                        className="hover:underline"
-                      >
-                        {task.id.slice(0, 8)}…
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={STATUS_STYLES[task.status]}>
-                        {task.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-slate-600">
-                      {task.filesCount}
-                    </TableCell>
-                    <TableCell className="text-slate-600 text-sm">
-                      {new Date(task.createdAt).toLocaleString('uk-UA')}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link href={`/dashboard/task/${task.id}`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-slate-600 hover:text-slate-900"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
-                          onClick={() => void handleDelete(task.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+        <TaskTable
+          title="Active Tasks"
+          tasks={activeTasks}
+          isLoading={isLoading}
+          emptyMessage={
+            tasks.length === 0
+              ? 'No tasks yet. Create your first task!'
+              : 'No active tasks.'
+          }
+          onDelete={handleDelete}
+        />
+
+        <TaskTable
+          title="Completed Tasks"
+          tasks={completedTasks}
+          isLoading={isLoading}
+          emptyMessage="No completed tasks yet."
+          onDelete={handleDelete}
+        />
       </main>
     </div>
   );
