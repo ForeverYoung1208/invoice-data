@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~49h**
+**Completed: ~50h**
 
 ---
 
@@ -78,13 +78,14 @@
 ### 11.A. Review UI
 - **Estimate:** 4h
 - **Notes:** additional UI review after finishing all tasks 
-- **Status:** in progress. Spent: 5h
+- **Status:** Completed. Spent: 5h
 
 ### 11.B. Fix taskRef property
 - **Estimate:** 3h
 - **Notes:** Fix taskRef property in task detail page
-- **Status:** in progress. Spent: 0h
+- **Status:** Completed. Spent: 1h
 
 ### 12. Deployment, CICD
-- **Estimate:** ??? not estimated yet
+- **Estimate:** 27h
 - **Notes:** Docker, Docker Compose, CI/CD pipeline, deployment scripts
+- **Status:** in progress. Spent: 2h
