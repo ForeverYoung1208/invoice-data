@@ -65,8 +65,8 @@
 ## Infrastructure
 
 - AWS CDK IaC scripts live in `infra/`
-- Provisions: EC2 (Amazon Linux) + EBS 4GB (mounted `/mnt/ebs`) + IAM role (`bedrock:InvokeModel`) + Security Group
-- Docker bind mounts in `docker-compose.yml` map to EBS paths (`/mnt/ebs/invoice_data`, `/mnt/ebs/postgres_data`)
+- Provisions: EC2 (Amazon Linux) + EBS 4GB (mounted `/docker`) + IAM role (`bedrock:InvokeModel`) + Security Group
+- Docker bind mounts in `docker-compose.yml` map to EBS paths (`/docker/app-files/data`, `/docker/postgres/data`)
 - See `infra/README.md` for full TODO list
 
 
@@ -118,6 +118,6 @@
 ## Infrastructure
 
 - AWS CDK IaC scripts live in `infra/`
-- Provisions: EC2 (Amazon Linux) + EBS 4GB (mounted `/mnt/ebs`) + IAM role (`bedrock:InvokeModel`) + Security Group
-- Docker bind mounts in `docker-compose.yml` map to EBS paths (`/mnt/ebs/invoice_data`, `/mnt/ebs/postgres_data`)
+- Provisions: EC2 (Amazon Linux) + EBS 4GB (mounted `/docker`) + IAM role (`bedrock:InvokeModel`) + Security Group
+- Docker bind mounts in `docker-compose.yml` map to EBS paths (`/docker/app-files/data`, `/docker/postgres/data`)
 - See `infra/README.md` for full TODO list
