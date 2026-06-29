@@ -1,7 +1,8 @@
-export enum NODE_ENV {
-  Development = 'development',
-  Poduction = 'production',
-  Test = 'test',
+export enum EEnvironments {
+  DEV = 'development',
+  PROD = 'production',
+  TEST = 'test',
+  LOCAL = 'local',
 }
 
 export enum ETaskStatus {

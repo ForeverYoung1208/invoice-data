@@ -92,6 +92,14 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
         usage: parseUsage(response),
       };
     } catch (err) {
+      if ('cause' in (err as any)) {
+        console.error(
+          'OpenAICompatibleAdapter.generate error:',
+          (err as any).cause,
+        );
+      } else {
+        console.error('OpenAICompatibleAdapter.generate error:', err);
+      }
       throw classifyError(err);
     }
   }

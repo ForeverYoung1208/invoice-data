@@ -89,10 +89,16 @@ export class MatchPartsNode implements IBaseNode {
           `Spare parts catalog:\n${catalogText}`,
       },
     ];
+    let raw;
+    try {
+      raw = await this.llm.generateJson<IMatchedPart[]>(messages, {
+        temperature: 0,
+      });
+    } catch (error) {
+      console.error(`[MatchPartsNode] job ${job.jobNumber} failed:`, error);
+      throw error;
+    }
 
-    const raw = await this.llm.generateJson<IMatchedPart[]>(messages, {
-      temperature: 0,
-    });
     const rawPartSchema = z.object({
       partId: z.string(),
       partName: z.string(),

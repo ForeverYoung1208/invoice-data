@@ -9,6 +9,7 @@
     "worker:dev": "tsx --watch worker/worker.ts",
     "build": "next build",
     "start": "concurrently \"next start\" \"npm run worker:prod\"",
+    "worker:debug": "node --inspect=0.0.0.0:9229 -r ts-node/register -r tsconfig-paths/register worker/worker.ts",
     "worker:prod": "tsx worker/worker.ts",
     "lint": "eslint \"{src,app,test,worker}/**/*.ts\" --fix",
     "lint:check": "eslint \"{src,app,test,worker}/**/*.ts\" --max-warnings=0",

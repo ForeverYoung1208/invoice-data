@@ -1,0 +1,69 @@
+# Production Docker Compose
+# - Runs on EC2 with CloudFront in front
+# - Uses EBS bind mounts at /docker for persistence
+# - No port exposures (handled by CloudFront)
+# - NODE_ENV=production
+#
+# Usage: docker compose -f docker-compose.prod.yml up -d
+
+x-app-base: &app-base
+  working_dir: /app
+  environment:
+    PORT: 3010
+    DATABASE_URL: ${DATABASE_URL}
+    AUTH_SECRET: ${AUTH_SECRET}
+    AUTH_URL: ${AUTH_URL}
+    AUTH_TRUST_HOST: "true"
+    ADMIN_USER: ${ADMIN_USER}
+    ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    LLM_BASE_URL: ${LLM_BASE_URL}
+    LLM_API_KEY: ${LLM_API_KEY}
+    LLM_MODEL: ${LLM_MODEL:-amazon.nova-lite-2-v1:0}
+    DATA_DIR: /data
+    NODE_ENV: production
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+
+  app:
+    <<: *app-base
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run start
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3010/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    volumes:
+      - /docker/app-files/data:/data
+    restart: always
+
+  worker:
+    <<: *app-base
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run worker:start
+    volumes:
+      - /docker/app-files/data:/data
+    restart: always
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${TYPEORM_USERNAME:-invoice}
+      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
+      POSTGRES_DB: ${TYPEORM_DATABASE:-invoice}
+    volumes:
+      - /docker/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TYPEORM_USERNAME:-invoice}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always

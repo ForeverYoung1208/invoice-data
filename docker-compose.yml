@@ -1,55 +1,74 @@
+# Local Development Docker Compose
+# - Runs on developer's machine
+# - Uses local bind mounts for hot reloading
+# - Exposes ports for local debugging
+# - NODE_ENV=local
+#
+# Usage: docker compose up
+
 x-app-base: &app-base
   image: node:22-alpine
   working_dir: /app
   environment:
     PORT: ${PORT:-3010}
     DATABASE_URL: postgresql://invoice:invoice@postgres:5432/invoice
-    AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-in-production}
-    ADMIN_USER: ${ADMIN_USER:-admin}
-    ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
-    LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:4000/v1}
-    LLM_API_KEY: ${LLM_API_KEY:-dev-key}
-    LLM_MODEL: ${LLM_MODEL:-amazon.nova-lite-2-v1:0}
+    AUTH_SECRET: ${AUTH_SECRET}
+    AUTH_URL: ${AUTH_URL:-http://localhost:3010}
+    AUTH_TRUST_HOST: "true"
+    ADMIN_USER: ${ADMIN_USER}
+    ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    LLM_BASE_URL: ${LLM_BASE_URL}
+    LLM_API_KEY: ${LLM_API_KEY}
+    LLM_MODEL: ${LLM_MODEL}
     DATA_DIR: /data
-    NODE_ENV: development
-  volumes:
-    - .:/app
-    - invoice_node_modules:/app/node_modules
-    - ./docker/app-files/data:/data
+    NODE_ENV: local
   depends_on:
     db:
       condition: service_healthy
-  restart: unless-stopped
 
 services:
 
   app:
     <<: *app-base
+    build:
+      dockerfile: Dockerfile
     command: sh -c "npm install && npm run app:dev"
     ports:
       - "3010:3010"
-  
+    volumes:
+      - .:/app
+      - ./docker/app-files/data:/data
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
   worker:
     <<: *app-base
-    command: sh -c "npm install && npm run worker:dev"
+    build:
+      dockerfile: Dockerfile
+    command: sh -c "npm install && npm run worker:debug"
+    volumes:
+      - .:/app
+      - ./docker/app-files/data:/data
+    ports:
+      - "9229:9229"
+    extra_hosts:
+      - host.docker.internal:host-gateway
 
   db:
     image: postgres:16
     environment:
-      POSTGRES_USER: ${TYPEORM_USERNAME}
-      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
-      POSTGRES_DB: ${TYPEORM_DATABASE}
+      POSTGRES_USER: invoice
+      POSTGRES_PASSWORD: invoice
+      POSTGRES_DB: invoice
     ports:
       - "5432:5432"
     volumes:
       - ./docker/postgres/data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${TYPEORM_USERNAME}"]
+      test: ["CMD-SHELL", "pg_isready -U invoice"]
       interval: 5s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
 
 volumes:
-  npm_global_modules:
   invoice_node_modules:

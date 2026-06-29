@@ -1,0 +1,64 @@
+# Development (Remote) Docker Compose
+# - Runs on remote EC2 instance
+# - Uses EBS bind mounts at /docker for persistence
+# - NODE_ENV=dev
+#
+# Usage: docker compose -f docker-compose.dev.yml up -d
+
+x-app-base: &app-base
+  working_dir: /app
+  environment:
+    PORT: ${PORT:-3010}
+    DATABASE_URL: ${DATABASE_URL}
+    AUTH_SECRET: ${AUTH_SECRET}
+    AUTH_URL: ${AUTH_URL}
+    AUTH_TRUST_HOST: "true"
+    ADMIN_USER: ${ADMIN_USER}
+    ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    LLM_BASE_URL: ${LLM_BASE_URL}
+    LLM_API_KEY: ${LLM_API_KEY}
+    LLM_MODEL: ${LLM_MODEL:-amazon.nova-lite-2-v1:0}
+    DATA_DIR: /data
+    NODE_ENV: dev
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+
+  app:
+    <<: *app-base
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run start
+    ports:
+      - "3010:3010"
+    volumes:
+      - /docker/app-files/data:/data
+    restart: unless-stopped
+
+  worker:
+    <<: *app-base
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npm run worker:start
+    volumes:
+      - /docker/app-files/data:/data
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${TYPEORM_USERNAME:-invoice}
+      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
+      POSTGRES_DB: ${TYPEORM_DATABASE:-invoice}
+    volumes:
+      - /docker/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TYPEORM_USERNAME:-invoice}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped

@@ -1,10 +1,9 @@
 import { z } from 'zod';
 import { join } from 'path';
+import { EEnvironments } from '../constants';
 
 const envValidationSchema = z.object({
-  NODE_ENV: z
-    .enum(['development', 'production', 'test'])
-    .default('development'),
+  NODE_ENV: z.enum(Object.values(EEnvironments)).default(EEnvironments.DEV),
   DATA_DIR: z.string({
     message: 'DATA_DIR environment variable is not set',
   }),
@@ -12,7 +11,7 @@ const envValidationSchema = z.object({
 });
 
 export type ConfigData = {
-  env: string;
+  env: EEnvironments;
   dataDir: string;
   templatePath: string;
   outputDir: string;
@@ -20,7 +19,7 @@ export type ConfigData = {
 };
 
 export class ConfigService {
-  getConfig(env?: string): ConfigData {
+  getConfig(env?: EEnvironments): ConfigData {
     const envVars = envValidationSchema.parse(process.env);
     console.log('envVars', envVars);
     const currentEnv = env || envVars.NODE_ENV;
