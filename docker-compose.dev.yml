@@ -17,7 +17,7 @@ x-app-base: &app-base
     ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     LLM_BASE_URL: ${LLM_BASE_URL}
     LLM_API_KEY: ${LLM_API_KEY}
-    LLM_MODEL: ${LLM_MODEL:-amazon.nova-lite-2-v1:0}
+    LLM_MODEL: ${LLM_MODEL}
     DATA_DIR: /data
     NODE_ENV: dev
   depends_on:
@@ -37,6 +37,8 @@ services:
     volumes:
       - /docker/app-files/data:/data
     restart: unless-stopped
+    extra_hosts:
+      - host.docker.internal:host-gateway    
 
   worker:
     <<: *app-base
@@ -47,6 +49,8 @@ services:
     volumes:
       - /docker/app-files/data:/data
     restart: unless-stopped
+    extra_hosts:
+      - host.docker.internal:host-gateway    
 
   db:
     image: postgres:16

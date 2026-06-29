@@ -1,14 +1,18 @@
 {
-  "availability-zones:account=652460108554:region=us-east-1": [
-    "us-east-1a",
-    "us-east-1b",
-    "us-east-1c",
-    "us-east-1d",
-    "us-east-1e",
-    "us-east-1f"
+  "availability-zones:account=652460108554:region=eu-central-1": [
+    "eu-central-1a",
+    "eu-central-1b",
+    "eu-central-1c"
   ],
-  "hosted-zone:account=652460108554:domainName=poc-test.click:region=us-east-1": {
-    "Id": "/hostedzone/Z04577023S5B3RPB287HZ",
-    "Name": "poc-test.click."
-  }
+  "hosted-zone:account=652460108554:domainName=for-test.click:region=eu-central-1": {
+    "Id": "/hostedzone/Z02922463EWWL2UZ4E04J",
+    "Name": "for-test.click."
+  },
+  "hosted-zone:account=652460108554:domainName=for-test.click:region=us-east-1": {
+    "Id": "/hostedzone/Z02922463EWWL2UZ4E04J",
+    "Name": "for-test.click."
+  },
+  "acknowledged-issue-numbers": [
+    34892
+  ]
 }
