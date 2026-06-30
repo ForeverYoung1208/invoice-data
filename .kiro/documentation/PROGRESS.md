@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~68h**
+**Completed: ~72**
 
 ---
 
@@ -88,9 +88,14 @@
 ### 12. Deployment, CICD
 - **Estimate:** 27h
 - **Notes:** Docker, Docker Compose, CI/CD pipeline, deployment scripts
-- **Status:** in progress. Spent: 18h
+- **Status:** in progress (aws dev deployment completed. still need to do dev deployment and github actions workflow to deploy updates). Spent: 18h
 
 ### 12.A. Add swap file for t3.small instances
 - **Estimate:** 1h
 - **Notes:** Add 4GB swap file to prevent OOM on small instances. Currently t3.medium (3.7GB RAM) is used, but swap would allow using t3.small (2GB). Also need to increase EBS volume size from 8GB to at least 10GB.
-- **Status:** pending
+- **Status:** Completed. Spent: 3h
+
+### 13. Download source files from task Files tab
+- **Estimate:** 1h
+- **Notes:** Add download button to Files tab in task detail page. Users need ability to download original CSV files that were uploaded. Need to create an API endpoint to serve the raw file for download.
+- **Status:** Completed. Spent: 0.5h

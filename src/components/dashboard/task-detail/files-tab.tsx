@@ -3,7 +3,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TabsContent } from '@/components/ui/tabs';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText, Loader2, Download } from 'lucide-react';
 import { ROLE_COLORS } from './constants';
 import {
   Table,
@@ -64,6 +64,15 @@ export function FilesTab({ files, taskId }: FilesTabProps) {
                   {file.name}
                 </CardTitle>
                 <div className="flex items-center gap-2">
+                  <a
+                    href={`/api/tasks/${taskId}/files/${file.id}/download`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1.5 hover:bg-slate-100 rounded-md transition-colors"
+                    title="Download file"
+                  >
+                    <Download className="w-4 h-4 text-slate-500" />
+                  </a>
                   <Badge className={`text-xs ${ROLE_COLORS[file.role] || ''}`}>
                     {file.role}
                   </Badge>
