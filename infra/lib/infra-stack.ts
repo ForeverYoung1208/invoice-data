@@ -375,7 +375,7 @@ ${commonScript}
       `aws s3 sync s3://${codeBucket.bucketName}/ . --region ${this.region}`,
       // Copy template files to data directory
       `mkdir -p ${appDir}/docker/app-files/data`,
-      `cp -r ${appDir}/templates/* ${appDir}/docker/app-files/data/ 2>/dev/null || true`,
+      `cp -r ${appDir}/deploy/templates/* ${appDir}/docker/app-files/data/ 2>/dev/null || true`,
       `chown -R ec2-user:ec2-user ${appDir}`,
       // Make and run the setup script
       `cat > ${appDir}/setup.sh << 'EOL'\n${startScript}\nEOL`,

@@ -12,6 +12,12 @@ if (!process.env.DATABASE_PASSWORD) {
 if (!process.env.LLM_API_KEY) {
   throw new Error('LLM_API_KEY environment variable is required');
 }
+if (!process.env.LLM_BASE_URL) {
+  throw new Error('LLM_BASE_URL environment variable is required');
+}
+if (!process.env.LLM_MODEL) {
+  throw new Error('LLM_MODEL environment variable is required');
+}
 
 // define project name (any) - will be used as part of naming for some resources like docker image, database, etc.
 const projectShortName = 'ingen';
@@ -50,9 +56,9 @@ const ebsDeviceName = '/dev/sdf';
 const ebsVolumeSizeGIB = 4;
 
 // llm
-const llmBaseUrl = 'https://bedrock-mantle.eu-west-1.api.aws/v1';
+const llmBaseUrl = process.env.LLM_BASE_URL;
 const llmApiKeyParameterValue = process.env.LLM_API_KEY;
-const llmModel = 'nvidia.nemotron-super-3-120b';
+const llmModel = process.env.LLM_MODEL;
 
 console.info('using development config...');
 
