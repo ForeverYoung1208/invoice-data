@@ -268,7 +268,7 @@ export class InfraStack extends cdk.Stack {
     codeBucket.grantRead(ec2Role);
 
     const userData = ec2.UserData.forLinux();
-    const userDataVersion = 'v2'; // bump this whenever you want user data to re-run
+    const userDataVersion = 'v3'; // bump this whenever you want user data to re-run
 
     // Create a start script
     const commonScript = `#!/bin/bash

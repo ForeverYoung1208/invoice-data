@@ -117,7 +117,7 @@ export class MatchPartsNode implements IBaseNode {
       );
     }
 
-    console.log('parsed responce:\n', parsed);
+    console.log('parsed response:\n', parsed);
 
     const parts: IMatchedPart[] = parsed.data.map((p) => ({
       partId: p.partId,

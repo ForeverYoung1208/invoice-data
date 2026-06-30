@@ -86,7 +86,7 @@ export class CorrectionNode implements IBaseNode {
           `Correction: ${state.pendingCorrection}`,
       },
     ];
-
+    console.log('messages:\n', messages);
     const raw = await this.llm.generateJson<IMatchedJob[]>(messages, {
       temperature: 0,
     });
@@ -102,6 +102,7 @@ export class CorrectionNode implements IBaseNode {
         ],
       };
     }
+    console.log('parsed correction response:\n', parsed);
 
     this.logger.info(`Correction applied: "${state.pendingCorrection}"`);
 
