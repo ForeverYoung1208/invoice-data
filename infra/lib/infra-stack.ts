@@ -358,6 +358,17 @@ ${commonScript}
       'VOLUME_UUID=$(blkid -s UUID -o value "$DEVICE_PATH")',
       `grep -q "$VOLUME_UUID" /etc/fstab || echo "UUID=$VOLUME_UUID ${appDir}/docker ext4 defaults,nofail 0 2" >> /etc/fstab`,
       `mountpoint -q ${appDir}/docker || mount ${appDir}/docker`,
+
+      '# Create swap file for t3.small instances (2GB RAM)',
+      'if [ ! -f /swapfile ]; then',
+      '  fallocate -l 4G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=4096',
+      '  chmod 600 /swapfile',
+      '  mkswap /swapfile',
+      '  swapon /swapfile',
+      "  echo '/swapfile none swap sw 0 0' >> /etc/fstab",
+      'fi',
+      'swapon --show',
+
       `mkdir -p ${appDir}/docker/app-files/data ${appDir}/docker/postgres/data`,
       `chown -R ec2-user:ec2-user ${appDir}/docker`,
       `cd ${appDir}`,
@@ -394,6 +405,14 @@ ${commonScript}
       userDataCausesReplacement: true,
       instanceName: `${projectName}-instance-${userDataVersion}`,
       blockDevices: [
+        {
+          deviceName: '/dev/xvda',
+          volume: ec2.BlockDeviceVolume.ebs(10, {
+            deleteOnTermination: false,
+            encrypted: true,
+            volumeType: ec2.EbsDeviceVolumeType.GP3,
+          }),
+        },
         {
           deviceName: ebsDeviceName,
           volume: ec2.BlockDeviceVolume.ebs(ebsVolumeSizeGIB, {
@@ -584,7 +603,7 @@ ${commonScript}
 
     new cdk.CfnOutput(this, 'PersistentDockerDirectory', {
       value: `${appDir}/docker`,
-      description: 'Mounted 4GB EBS volume used for database and user files',
+      description: 'Mounted 4GB EBS volume used for database and user files, plus 4GB swap file on root volume',
     });
   }
 }
