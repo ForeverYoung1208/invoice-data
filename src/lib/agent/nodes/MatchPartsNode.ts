@@ -89,6 +89,7 @@ export class MatchPartsNode implements IBaseNode {
           `Spare parts catalog:\n${catalogText}`,
       },
     ];
+    console.log('messages:\n', messages);
     let raw;
     try {
       raw = await this.llm.generateJson<IMatchedPart[]>(messages, {
@@ -115,6 +116,8 @@ export class MatchPartsNode implements IBaseNode {
         `LLM returned invalid part data: ${parsed.error.message}`,
       );
     }
+
+    console.log('parsed responce:\n', parsed);
 
     const parts: IMatchedPart[] = parsed.data.map((p) => ({
       partId: p.partId,

@@ -268,7 +268,7 @@ export class InfraStack extends cdk.Stack {
     codeBucket.grantRead(ec2Role);
 
     const userData = ec2.UserData.forLinux();
-    const userDataVersion = 'v1'; // bump this whenever you want user data to re-run
+    const userDataVersion = 'v2'; // bump this whenever you want user data to re-run
 
     // Create a start script
     const commonScript = `#!/bin/bash
@@ -460,6 +460,7 @@ ${commonScript}
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
         },
         domainNames: [fullSubDomainNameApp],
         certificate: certificate,
@@ -590,7 +591,8 @@ ${commonScript}
 
     new cdk.CfnOutput(this, 'PersistentDockerDirectory', {
       value: `${appDir}/docker`,
-      description: 'Mounted 4GB EBS volume used for database and user files, plus 4GB swap file on root volume',
+      description:
+        'Mounted 4GB EBS volume used for database and user files, plus 4GB swap file on root volume',
     });
   }
 }

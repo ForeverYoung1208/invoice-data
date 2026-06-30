@@ -34,12 +34,12 @@ export type ConfigData = {
 export class ConfigService {
   getConfig(env?: EEnvironments): ConfigData {
     const envVars = envValidationSchema.parse(process.env);
-    const sensitiveVars = {
-      TYPEORM_PASSWORD: '***' + envVars.TYPEORM_PASSWORD.slice(-4),
-      AUTH_SECRET: '***' + envVars.AUTH_SECRET.slice(-4),
-      LLM_API_KEY: '***' + envVars.LLM_API_KEY.slice(-4),
-    };
-    console.log('envVars', { ...envVars, ...sensitiveVars });
+    // const sensitiveVars = {
+    //   TYPEORM_PASSWORD: '***' + envVars.TYPEORM_PASSWORD.slice(-4),
+    //   AUTH_SECRET: '***' + envVars.AUTH_SECRET.slice(-4),
+    //   LLM_API_KEY: '***' + envVars.LLM_API_KEY.slice(-4),
+    // };
+    // console.log('envVars', { ...envVars, ...sensitiveVars });
     const currentEnv = env || envVars.NODE_ENV;
     const dataDir = './docker/app-files/data';
 
