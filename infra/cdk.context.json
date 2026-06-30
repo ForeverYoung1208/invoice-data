@@ -14,5 +14,13 @@
   },
   "acknowledged-issue-numbers": [
     34892
-  ]
+  ],
+  "hosted-zone:account=652460108554:domainName=poc-test.click:region=us-east-1": {
+    "Id": "/hostedzone/Z04577023S5B3RPB287HZ",
+    "Name": "poc-test.click."
+  },
+  "hosted-zone:account=652460108554:domainName=poc-test.click:region=eu-central-1": {
+    "Id": "/hostedzone/Z04577023S5B3RPB287HZ",
+    "Name": "poc-test.click."
+  }
 }

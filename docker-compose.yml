@@ -2,26 +2,26 @@
 # - Runs on developer's machine
 # - Uses local bind mounts for hot reloading
 # - Exposes ports for local debugging
-# - NODE_ENV=local
 #
 # Usage: docker compose up
 
 x-app-base: &app-base
   image: node:22-alpine
   working_dir: /app
+  env_file:
+    - .env
   environment:
-    PORT: ${PORT:-3010}
-    DATABASE_URL: postgresql://invoice:invoice@postgres:5432/invoice
+    PORT: ${PORT}
     AUTH_SECRET: ${AUTH_SECRET}
-    AUTH_URL: ${AUTH_URL:-http://localhost:3010}
-    AUTH_TRUST_HOST: "true"
+    AUTH_URL: ${AUTH_URL}
+    AUTH_TRUST_HOST: ${AUTH_TRUST_HOST}
     ADMIN_USER: ${ADMIN_USER}
     ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     LLM_BASE_URL: ${LLM_BASE_URL}
     LLM_API_KEY: ${LLM_API_KEY}
     LLM_MODEL: ${LLM_MODEL}
-    DATA_DIR: /data
-    NODE_ENV: local
+    NODE_ENV: development
+    NEXT_ALLOWED_DEV_ORIGINS: ${NEXT_ALLOWED_DEV_ORIGINS}
   depends_on:
     db:
       condition: service_healthy
@@ -34,10 +34,9 @@ services:
       dockerfile: Dockerfile
     command: sh -c "npm install && npm run app:dev"
     ports:
-      - "3010:3010"
+      - ${PORT}:${PORT}
     volumes:
       - .:/app
-      - ./docker/app-files/data:/data
     extra_hosts:
       - host.docker.internal:host-gateway
 
@@ -48,7 +47,6 @@ services:
     command: sh -c "npm install && npm run worker:debug"
     volumes:
       - .:/app
-      - ./docker/app-files/data:/data
     ports:
       - "9229:9229"
     extra_hosts:
@@ -57,18 +55,15 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_USER: invoice
-      POSTGRES_PASSWORD: invoice
-      POSTGRES_DB: invoice
+      POSTGRES_USER: ${TYPEORM_USERNAME}
+      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
+      POSTGRES_DB: ${TYPEORM_DATABASE}
     ports:
       - "5432:5432"
     volumes:
       - ./docker/postgres/data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U invoice"]
+      test: ["CMD-SHELL", "pg_isready -U ${TYPEORM_USERNAME} -d ${TYPEORM_DATABASE}"]
       interval: 5s
       timeout: 5s
       retries: 5
-
-volumes:
-  invoice_node_modules:

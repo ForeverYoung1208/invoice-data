@@ -3,18 +3,73 @@
 import * as cdk from 'aws-cdk-lib';
 import { InfraStack } from '../lib/infra-stack';
 import { execSync } from 'child_process';
+import { existsSync, readFileSync } from 'fs';
+import { resolve } from 'path';
+
+export enum TARGET_ENV {
+  DEV = 'development',
+  STAGE = 'staging',
+  PROD = 'production',
+}
 
 export interface IAppStackConfig {
+  adminUser: string;
+  adminPasswordParameterValue: string;
+  authSecretParameterValue: string;
   databaseName: string;
+  databaseHost: string;
+  databasePort: number;
+  databasePasswordParameterValue: string;
   domainName: string;
   projectName: string;
   subDomainNameApp: string;
   fullSubDomainNameApp: string;
   userDeploerName: string;
   databaseUsername: string;
-  targetNodeEnv: string;
-  siteOrigin: string;
+  targetNodeEnv: TARGET_ENV;
+  dockerComposeFileName: string;
+  llmBaseUrl: string;
+  llmApiKeyParameterValue: string;
+  llmModel: string;
+  pollIntervalMs: number;
+  appDir: string;
+  appPort: number;
+  ebsDeviceName: string;
+  ebsVolumeSizeGIB: number;
 }
+
+function loadInfraEnv(): void {
+  const envFilePath = resolve(__dirname, '../.env');
+
+  if (!existsSync(envFilePath)) {
+    return;
+  }
+
+  const fileContent = readFileSync(envFilePath, 'utf8');
+  const lines = fileContent.split(/\r?\n/);
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+
+    if (!trimmedLine || trimmedLine.startsWith('#')) {
+      continue;
+    }
+
+    const separatorIndex = trimmedLine.indexOf('=');
+
+    if (separatorIndex === -1) {
+      continue;
+    }
+
+    const key = trimmedLine.slice(0, separatorIndex).trim();
+    const rawValue = trimmedLine.slice(separatorIndex + 1).trim();
+    const value = rawValue.replace(/^["']|["']$/g, '');
+
+    process.env[key] ??= value;
+  }
+}
+
+loadInfraEnv();
 
 const app = new cdk.App();
 
@@ -23,18 +78,18 @@ const targetEnv = app.node.tryGetContext('targetEnv');
 let config: IAppStackConfig;
 
 switch (targetEnv) {
-  case 'dev':
+  case TARGET_ENV.DEV:
     config = require('../config.dev').config;
     break;
-  case 'stage':
+  case TARGET_ENV.STAGE:
     config = require('../config.stage').config;
     break;
-  case 'prod':
+  case TARGET_ENV.PROD:
     config = require('../config.prod').config;
     break;
   default:
     throw new Error(
-      'target targetEnv is not defined; use `npx cdk deploy --all --context targetEnv=dev` , where targetEnv= dev | stage | prod. NOTE!!! flag `--all` is needed because additionoal stack will be deployed to region us-east-1 (it is needed for certificate to work with CloudFront).',
+      `target targetEnv is not defined; use 'npx cdk deploy --all --context targetEnv=${TARGET_ENV.DEV}' , where targetEnv= ${TARGET_ENV.DEV} | ${TARGET_ENV.STAGE} | ${TARGET_ENV.PROD}. NOTE!!! flag '--all' is needed because additionoal stack will be deployed to region us-east-1 (it is needed for certificate to work with CloudFront).`,
     );
 }
 // Build the application before deployment

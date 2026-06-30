@@ -245,8 +245,9 @@ export default function TaskDetailPage({
           <div className="flex items-center gap-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">
             <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
             <span>
-              Task is <strong>{task.status}</strong> — results will appear
-              automatically when processing completes.
+              Task is <strong>{task.status}</strong> by LLM — results will
+              appear automatically when processing completes. It can take some
+              time if LLM is overloaded.
             </span>
           </div>
         )}

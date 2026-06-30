@@ -3,6 +3,7 @@ import { getGlobalDataSource } from '@/lib/db/dataSource';
 import { TaskFile } from '@/lib/db/entities/TaskFile';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
+import { configService } from '@/lib/container';
 
 /**
  * @swagger
@@ -48,13 +49,7 @@ export async function GET(
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
 
-    const uploadDir = process.env.DATA_DIR;
-    if (!uploadDir) {
-      return NextResponse.json(
-        { error: 'DATA_DIR environment variable is not set' },
-        { status: 500 },
-      );
-    }
+    const uploadDir = configService.getConfig().dataDir;
 
     const diskPath = join(uploadDir, taskFile.fileName);
 

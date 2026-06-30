@@ -4,6 +4,7 @@ import { TaskFile } from '@/lib/db/entities/TaskFile';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
+import { configService } from '@/lib/container';
 
 /**
  * @swagger
@@ -45,11 +46,8 @@ export async function GET(
     }
 
     // The filePath in DB is like "/uploads/filename.csv"
-    // We need to map this to the actual location in DATA_DIR
-    const uploadDir = process.env.DATA_DIR;
-    if (!uploadDir) {
-      return NextResponse.json({ error: 'DATA_DIR not set' }, { status: 500 });
-    }
+    // We need to map this to the actual location in dataDir
+    const uploadDir = configService.getConfig().dataDir;
 
     // Extract the filename part from the filePath (stripping /uploads/)
     const fileName = taskFile.fileName.split('/').pop();

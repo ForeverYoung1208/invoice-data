@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~50h**
+**Completed: ~60h**
 
 ---
 
@@ -88,4 +88,9 @@
 ### 12. Deployment, CICD
 - **Estimate:** 27h
 - **Notes:** Docker, Docker Compose, CI/CD pipeline, deployment scripts
-- **Status:** in progress. Spent: 2h
+- **Status:** in progress. Spent: 10h
+
+### 12.A. Add swap file for t3.small instances
+- **Estimate:** 1h
+- **Notes:** Add 4GB swap file to prevent OOM on small instances. Currently t3.medium (3.7GB RAM) is used, but swap would allow using t3.small (2GB). Also need to increase EBS volume size from 8GB to at least 16GB.
+- **Status:** pending

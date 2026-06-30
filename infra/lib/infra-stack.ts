@@ -11,7 +11,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import { Construct } from 'constructs';
-import { IAppStackConfig } from '../bin/infra';
+import { IAppStackConfig, TARGET_ENV } from '../bin/infra';
 
 export class InfraStack extends cdk.Stack {
   constructor(
@@ -27,7 +27,15 @@ export class InfraStack extends cdk.Stack {
       fullSubDomainNameApp,
       subDomainNameApp,
       userDeploerName,
+      dockerComposeFileName,
+      targetNodeEnv,
+      appDir,
+      appPort,
+      ebsDeviceName,
+      ebsVolumeSizeGIB,
     } = config;
+
+    const isProd = targetNodeEnv === TARGET_ENV.PROD;
     /**
      *
      *
@@ -48,63 +56,77 @@ export class InfraStack extends cdk.Stack {
       autoDeleteObjects: true, // Clean up when stack is deleted
     });
     // Deploy code as part of CDK stack
-    new s3deploy.BucketDeployment(this, `${projectName}CodeDeployment`, {
-      sources: [
-        s3deploy.Source.asset('../', {
-          exclude: [
-            'node_modules',
-            '.git',
-            '.env',
-            'infra',
-            'dist',
-            'test',
-            'docker/postgres/data',
-            'docker/postgres/data_tests',
-            'docker/redis/data',
-          ],
-        }),
-      ],
-      destinationBucket: codeBucket,
-    });
+    const codeDeployment = new s3deploy.BucketDeployment(
+      this,
+      `${projectName}CodeDeployment`,
+      {
+        sources: [
+          s3deploy.Source.asset('../', {
+            exclude: [
+              'node_modules',
+              '.git',
+              '.env',
+              '.next',
+              '.kiro',
+              '.kilo',
+              '.codex',
+              '.devin',
+              '.agents',
+              '.pi',
+              '.playwright-mcp',
+              '.playwright-cli',
+              '.vscode',
+              'infra',
+              'dist',
+              'test',
+              'test-results',
+              'tests-playwright',
+              'docker',
+              'docker/postgres/data',
+              'docker/app-files/data',
+              'screenshots',
+            ],
+          }),
+        ],
+        destinationBucket: codeBucket,
+      },
+    );
 
     // SSM Parameters
-    const dbPasswordParameterValue = Array(10)
-      .fill(null)
-      .map(() => Math.floor(Math.random() * 36).toString(36))
-      .join('');
-    const jwtSecretKeyParameterValue = Array(10)
-      .fill(null)
-      .map(() => Math.floor(Math.random() * 36).toString(36))
-      .join('');
-    const jwtRefreshSecretKeyParameterValue = Array(10)
-      .fill(null)
-      .map(() => Math.floor(Math.random() * 36).toString(36))
-      .join('');
     const dbPasswordParameter = new ssm.StringParameter(
       this,
       `${projectName}DbPasswordParameter`,
       {
         parameterName: `/${projectName}/db-password`,
-        stringValue: dbPasswordParameterValue,
+        stringValue: config.databasePasswordParameterValue,
         description: 'DB password',
       },
     );
-    const jwtSecretKeyParameter = new ssm.StringParameter(
+    const authSecretParameter = new ssm.StringParameter(
       this,
-      `${projectName}JwtSecretKeyParameter`,
+      `${projectName}AuthSecretParameter`,
       {
-        parameterName: `/${projectName}/jwt-secret-key`,
-        stringValue: jwtSecretKeyParameterValue,
-        description: 'JWT secret key',
+        parameterName: `/${projectName}/auth-secret`,
+        stringValue: config.authSecretParameterValue,
+        description: 'NextAuth AUTH_SECRET value',
       },
     );
-    const jwtRefreshSecretKeyParameter = new ssm.StringParameter(
+    const adminPasswordParameter = new ssm.StringParameter(
       this,
-      `${projectName}JwtRefreshSecretKeyParameter`,
+      `${projectName}AdminPasswordParameter`,
       {
-        parameterName: `/${projectName}/jwt-refresh-secret-key`,
-        stringValue: jwtRefreshSecretKeyParameterValue,
-        description: 'JWT refresh secret key',
+        parameterName: `/${projectName}/admin-password`,
+        stringValue: config.adminPasswordParameterValue,
+        description: 'Initial admin user password',
+      },
+    );
+    const llmApiKeyParameter = new ssm.StringParameter(
+      this,
+      `${projectName}LlmApiKeyParameter`,
+      {
+        parameterName: `/${projectName}/llm-api-key`,
+        stringValue: config.llmApiKeyParameterValue,
+        description: 'LLM API key for OpenAI-compatible endpoint',
       },
     );
     /**
@@ -176,24 +198,24 @@ export class InfraStack extends cdk.Stack {
      *
      */
 
-    const apiSecurityGroup = new ec2.SecurityGroup(
+    const appSecurityGroup = new ec2.SecurityGroup(
       this,
-      `${projectName}ApiSecurityGroup`,
+      `${projectName}AppSecurityGroup`,
       {
         vpc,
-        description: 'Serurity group for API',
+        description: 'Security group for the Next.js application server',
         allowAllOutbound: true,
       },
     );
 
-    apiSecurityGroup.addIngressRule(
+    appSecurityGroup.addIngressRule(
       ec2.Peer.anyIpv4(),
-      ec2.Port.tcp(3000),
-      'Allow traffic from any ipv4 to port 3000',
+      ec2.Port.tcp(appPort),
+      `Allow CloudFront origin traffic to the Next.js server on port ${appPort}`,
     );
 
     // TODO delete after debug
-    apiSecurityGroup.addIngressRule(
+    appSecurityGroup.addIngressRule(
       ec2.Peer.anyIpv4(),
       ec2.Port.tcp(22),
       'Allow SSH access',
@@ -225,9 +247,21 @@ export class InfraStack extends cdk.Stack {
         actions: ['ssm:GetParameter', 'ssm:GetParameters'],
         resources: [
           dbPasswordParameter.parameterArn,
-          jwtSecretKeyParameter.parameterArn,
-          jwtRefreshSecretKeyParameter.parameterArn,
+          authSecretParameter.parameterArn,
+          adminPasswordParameter.parameterArn,
+          llmApiKeyParameter.parameterArn,
         ],
+      }),
+    );
+
+    ec2Role.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'bedrock:InvokeModel',
+          'bedrock:InvokeModelWithResponseStream',
+        ],
+        resources: ['*'],
       }),
     );
 
@@ -240,44 +274,56 @@ export class InfraStack extends cdk.Stack {
     const commonScript = `#!/bin/bash
   set -ex
   echo "Starting services and application..."
-  cd /var/www/app
+  cd ${appDir}
   
   # Create .env file with all variables including sensitive ones
 cat > .env << EOF
-PORT=3000
+PORT=${appPort}
 DEBUG_PORT=9229
 NODE_ENV=${config.targetNodeEnv}
-SITE_ORIGIN=${config.siteOrigin}
-DB_HOST=db
-DB_PORT=5432
-DB_DATABASE=${config.databaseName}
-DB_USERNAME=${config.databaseUsername}
-REDIS_PORT=6379
-ACCESS_TOKEN_TTL=900
-REFRESH_TOKEN_TTL=604800
-BCRYPT_SALT_ROUNDS=8
-DB_PASSWORD=\$(aws ssm get-parameter --name "/${projectName}/db-password" --with-decryption --query "Parameter.Value" --output text --region ${this.region})
-JWT_SECRET_KEY=\$(aws ssm get-parameter --name "/${projectName}/jwt-secret-key" --with-decryption --query "Parameter.Value" --output text --region ${this.region})
-JWT_REFRESH_SECRET_KEY=\$(aws ssm get-parameter --name "/${projectName}/jwt-refresh-secret-key" --with-decryption --query "Parameter.Value" --output text --region ${this.region})
+TYPEORM_HOST=${config.databaseHost}
+TYPEORM_PORT=${config.databasePort}
+TYPEORM_DATABASE=${config.databaseName}
+TYPEORM_USERNAME=${config.databaseUsername}
+TYPEORM_PASSWORD=\$(aws ssm get-parameter --name "/${projectName}/db-password" --with-decryption --query "Parameter.Value" --output text --region ${this.region})
+DATABASE_URL=postgresql://${config.databaseUsername}:\$(aws ssm get-parameter --name "/${projectName}/db-password" --with-decryption --query "Parameter.Value" --output text --region ${this.region})@db:5432/${config.databaseName}
+AUTH_SECRET=\$(aws ssm get-parameter --name "/${projectName}/auth-secret" --with-decryption --query "Parameter.Value" --output text --region ${this.region})
+AUTH_URL=https://${fullSubDomainNameApp}
+AUTH_TRUST_HOST=true
+ADMIN_USER=${config.adminUser}
+ADMIN_PASSWORD=\$(aws ssm get-parameter --name "/${projectName}/admin-password" --with-decryption --query "Parameter.Value" --output text --region ${this.region})
+LLM_BASE_URL=${config.llmBaseUrl}
+LLM_API_KEY=\$(aws ssm get-parameter --name "/${projectName}/llm-api-key" --with-decryption --query "Parameter.Value" --output text --region ${this.region})
+LLM_MODEL=${config.llmModel}
+POLL_INTERVAL_MS=${config.pollIntervalMs}
+NEXT_ALLOWED_DEV_ORIGINS=localhost,127.0.0.1,${fullSubDomainNameApp}
 EOF
 
 `;
     const startScript = `
 ${commonScript}
-  docker-compose -f docker-compose-dev.yml up api-build
-  docker-compose -f docker-compose-dev.yml up api-run db redis -d
-  sleep 30
-  docker-compose exec -T api-run npm run migration:run
-  rm -f .env
+  docker compose -f ${dockerComposeFileName} build
+  docker compose -f ${dockerComposeFileName} up db -d
+  docker compose -f ${dockerComposeFileName} run --rm app npm install
+  ${isProd ? `docker compose -f ${dockerComposeFileName} run --rm app npm run build` : ''}
+  sleep 20
+  docker compose -f ${dockerComposeFileName} run --rm app npm run migration:run
+  docker compose -f ${dockerComposeFileName} run --rm app npm run db:seed
+
+  docker compose -f ${dockerComposeFileName} up app worker -d --force-recreate
 `;
 
     const restartScript = `
 ${commonScript}
-  docker-compose -f docker-compose-dev.yml run api-build
-  docker-compose -f docker-compose-dev.yml restart api-run db redis
-  sleep 30
-  docker-compose exec -T api-run npm run migration:run
-  rm -f .env
+  docker compose -f ${dockerComposeFileName} build
+  docker compose -f ${dockerComposeFileName} up db -d
+  docker compose -f ${dockerComposeFileName} run --rm app npm install
+  ${isProd ? `docker compose -f ${dockerComposeFileName} run --rm app npm run build` : ''}
+  sleep 20
+  docker compose -f ${dockerComposeFileName} run --rm app npm run migration:run
+  docker compose -f ${dockerComposeFileName} run --rm app npm run db:seed
+
+  docker compose -f ${dockerComposeFileName} up app worker -d --force-recreate
 `;
 
     userData.addCommands(
@@ -301,17 +347,31 @@ ${commonScript}
       'curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"',
       'unzip -q awscliv2.zip',
       './aws/install',
-      'mkdir -p /var/www/app',
-      'chown ec2-user:ec2-user /var/www/app',
-      'cd /var/www/app',
+      `mkdir -p ${appDir}`,
+      `chown -R ec2-user:ec2-user ${appDir}`,
+      `DEVICE_PATH=$(readlink -f ${ebsDeviceName} || true)`,
+      `if [ -z "$DEVICE_PATH" ]; then DEVICE_PATH=$(readlink -f /dev/xvdf || true); fi`,
+      `if [ -z "$DEVICE_PATH" ]; then DEVICE_PATH=$(lsblk -ndo NAME,TYPE | awk '$2=="disk" && $1!="nvme0n1" {print "/dev/"$1; exit}'); fi`,
+      'while [ -z "$DEVICE_PATH" ] || [ ! -b "$DEVICE_PATH" ]; do sleep 2; DEVICE_PATH=$(readlink -f /dev/xvdf || true); done',
+      'if ! blkid "$DEVICE_PATH"; then mkfs -t ext4 "$DEVICE_PATH"; fi',
+      `mkdir -p ${appDir}/docker`,
+      'VOLUME_UUID=$(blkid -s UUID -o value "$DEVICE_PATH")',
+      `grep -q "$VOLUME_UUID" /etc/fstab || echo "UUID=$VOLUME_UUID ${appDir}/docker ext4 defaults,nofail 0 2" >> /etc/fstab`,
+      `mountpoint -q ${appDir}/docker || mount ${appDir}/docker`,
+      `mkdir -p ${appDir}/docker/app-files/data ${appDir}/docker/postgres/data`,
+      `chown -R ec2-user:ec2-user ${appDir}/docker`,
+      `cd ${appDir}`,
       `aws s3 sync s3://${codeBucket.bucketName}/ . --region ${this.region}`,
-      'chown -R ec2-user:ec2-user /var/www/app',
+      // Copy template files to data directory
+      `mkdir -p ${appDir}/docker/app-files/data`,
+      `cp -r ${appDir}/templates/* ${appDir}/docker/app-files/data/ 2>/dev/null || true`,
+      `chown -R ec2-user:ec2-user ${appDir}`,
       // Make and run the setup script
-      `cat > /var/www/app/setup.sh << 'EOL'\n${startScript}\nEOL`,
-      `cat > /var/www/app/restart.sh << 'EOL'\n${restartScript}\nEOL`,
-      'chmod +x /var/www/app/setup.sh',
-      'chmod +x /var/www/app/restart.sh',
-      'cd /var/www/app && ./setup.sh',
+      `cat > ${appDir}/setup.sh << 'EOL'\n${startScript}\nEOL`,
+      `cat > ${appDir}/restart.sh << 'EOL'\n${restartScript}\nEOL`,
+      `chmod +x ${appDir}/setup.sh`,
+      `chmod +x ${appDir}/restart.sh`,
+      `cd ${appDir} && ./setup.sh`,
     );
 
     const keyPair = new ec2.CfnKeyPair(this, `${projectName}KeyPair`, {
@@ -320,7 +380,7 @@ ${commonScript}
 
     const ec2Instance = new ec2.Instance(this, `${projectName}EC2Instance`, {
       vpc,
-      securityGroup: apiSecurityGroup,
+      securityGroup: appSecurityGroup,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PUBLIC,
       },
@@ -333,12 +393,25 @@ ${commonScript}
       userData: userData,
       userDataCausesReplacement: true,
       instanceName: `${projectName}-instance-${userDataVersion}`,
+      blockDevices: [
+        {
+          deviceName: ebsDeviceName,
+          volume: ec2.BlockDeviceVolume.ebs(ebsVolumeSizeGIB, {
+            deleteOnTermination: false,
+            encrypted: true,
+            volumeType: ec2.EbsDeviceVolumeType.GP3,
+          }),
+        },
+      ],
       keyPair: ec2.KeyPair.fromKeyPairName(
         this,
         `${projectName}KeyPairRef`,
         keyPair.keyName,
       ),
     });
+
+    // Make EC2 instance depend on code deployment to ensure files are uploaded before instance launches
+    ec2Instance.node.addDependency(codeDeployment);
 
     // Tag instance for easy SSM targeting
     cdk.Tags.of(ec2Instance).add('Name', `${projectName}-ec2`);
@@ -347,47 +420,38 @@ ${commonScript}
      *
      *
      *
-     * FRONTEND PREPARING AND ROUTE53
+     * CLOUDFRONT AND ROUTE53
      *
      *
      *
      */
 
-    // S3 bucket for frontend
-    const frontendBucket = new s3.Bucket(this, `${projectName}FrontendBucket`, {
-      bucketName: `${projectName}-frontend-${this.account}`,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html', // For SPA routing
-      publicReadAccess: true,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS_ONLY,
-    });
-
-    // add cloudfront distribution to handle https
+    // CloudFront terminates HTTPS and forwards every request to the Next.js server.
     const distribution = new cloudfront.Distribution(
       this,
       `${projectName}Distribution`,
       {
         defaultBehavior: {
-          // Frontend as default behavior
-          origin: new origins.S3StaticWebsiteOrigin(frontendBucket),
+          origin: new origins.HttpOrigin(ec2Instance.instancePublicDnsName, {
+            httpPort: appPort,
+            protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
+          }),
+          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
           viewerProtocolPolicy:
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         },
         additionalBehaviors: {
-          '/api/*': {
-            // API behavior
+          '/_next/static/*': {
             origin: new origins.HttpOrigin(ec2Instance.instancePublicDnsName, {
-              httpPort: 3000,
+              httpPort: appPort,
               protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
             }),
-            originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
             viewerProtocolPolicy:
               cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-            allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
-            cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+            allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+            cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
           },
         },
 
@@ -445,16 +509,6 @@ ${commonScript}
             effect: iam.Effect.ALLOW,
             actions: ['s3:*'],
             resources: [codeBucket.bucketArn, `${codeBucket.bucketArn}/*`],
-          }),
-
-          // Allow publishing frontend artifacts to the dedicated frontend bucket
-          new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: ['s3:*'],
-            resources: [
-              frontendBucket.bucketArn,
-              `${frontendBucket.bucketArn}/*`,
-            ],
           }),
 
           // Allow triggering SSM RunCommand to restart docker on the instance
@@ -523,14 +577,14 @@ ${commonScript}
       description: 'User deployer name',
     });
 
-    new cdk.CfnOutput(this, 'FrontendBucketName', {
-      value: frontendBucket.bucketName,
-      description: 'S3 bucket for frontend deployment',
-    });
-
     new cdk.CfnOutput(this, 'CloudFrontDistributionId', {
       value: distribution.distributionId,
       description: 'CloudFront distribution ID',
+    });
+
+    new cdk.CfnOutput(this, 'PersistentDockerDirectory', {
+      value: `${appDir}/docker`,
+      description: 'Mounted 4GB EBS volume used for database and user files',
     });
   }
 }

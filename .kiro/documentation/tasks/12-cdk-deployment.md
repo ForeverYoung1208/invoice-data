@@ -1,6 +1,6 @@
 # Task 12: AWS CDK Infrastructure & Deployment
 
-**Status:** Not started
+**Status:** In progress
 **Parent:** Task 12 — Deployment, CI/CD
 **Estimated total:** ~22–27 hours
 
@@ -9,6 +9,8 @@
 ## Overview
 
 Provision AWS infrastructure via AWS CDK for deploying the invoice-data app to a **single EC2 instance** running all services (Next.js app, worker, Postgres) inside Docker containers. An attached EBS volume provides persistence for database data and application files across instance restarts. HTTPS is configured from day one via CloudFront + ACM.
+
+**Current implementation note:** `infra/lib/infra-stack.ts` has been adapted from the reference project to use CloudFront with the EC2-hosted Next.js server as the single origin. The obsolete frontend S3 website bucket was removed. The stack now mounts a 4 GB encrypted GP3 EBS block device at `/var/www/app/docker`, and the remote Docker Compose files bind `./docker/postgres/data` and `./docker/app-files/data` from that mounted directory.
 
 ---
 
