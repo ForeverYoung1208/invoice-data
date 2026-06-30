@@ -445,7 +445,7 @@ ${commonScript}
      *
      */
 
-    // CloudFront terminates HTTPS and forwards every request to the Next.js server.
+    // CloudFront terminates HTTPS and forwards requests to the Next.js server.
     const distribution = new cloudfront.Distribution(
       this,
       `${projectName}Distribution`,
@@ -456,26 +456,11 @@ ${commonScript}
             protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
             connectionTimeout: cdk.Duration.seconds(10),
           }),
-          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
           viewerProtocolPolicy:
             cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         },
-        additionalBehaviors: {
-          '/_next/static/*': {
-            origin: new origins.HttpOrigin(ec2Instance.instancePublicDnsName, {
-              httpPort: appPort,
-              protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
-              connectionTimeout: cdk.Duration.seconds(10),
-            }),
-            viewerProtocolPolicy:
-              cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-            allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-            cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-          },
-        },
-
         domainNames: [fullSubDomainNameApp],
         certificate: certificate,
       },
