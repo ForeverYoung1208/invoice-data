@@ -454,7 +454,7 @@ ${commonScript}
           origin: new origins.HttpOrigin(ec2Instance.instancePublicDnsName, {
             httpPort: appPort,
             protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
-            connectionTimeout: cdk.Duration.seconds(20),
+            connectionTimeout: cdk.Duration.seconds(10),
           }),
           originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER,
           viewerProtocolPolicy:
@@ -467,7 +467,7 @@ ${commonScript}
             origin: new origins.HttpOrigin(ec2Instance.instancePublicDnsName, {
               httpPort: appPort,
               protocolPolicy: cloudfront.OriginProtocolPolicy.HTTP_ONLY,
-              connectionTimeout: cdk.Duration.seconds(20),
+              connectionTimeout: cdk.Duration.seconds(10),
             }),
             viewerProtocolPolicy:
               cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
