@@ -93,15 +93,15 @@ switch (targetEnv) {
     );
 }
 // Build the application before deployment
-console.log('Building application...');
-try {
-  execSync('npm run build', { cwd: '../', stdio: 'inherit' });
-  console.log('✅ Build completed successfully!');
-} catch (error) {
-  console.error('❌ Build failed!');
-  console.error(error);
-  process.exit(1);
-}
+// console.log('Building application...');
+// try {
+//   execSync('npm run build', { cwd: '../', stdio: 'inherit' });
+//   console.log('✅ Build completed successfully!');
+// } catch (error) {
+//   console.error('❌ Build failed!');
+//   console.error(error);
+//   process.exit(1);
+// }
 
 new InfraStack(app, `${config.projectName}Stack`, config, {
   /* If you don't specify 'env', this stack will be environment-agnostic.
