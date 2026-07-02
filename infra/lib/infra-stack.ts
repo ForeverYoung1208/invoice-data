@@ -268,7 +268,7 @@ export class InfraStack extends cdk.Stack {
     codeBucket.grantRead(ec2Role);
 
     const userData = ec2.UserData.forLinux();
-    const userDataVersion = 'v3'; // bump this whenever you want user data to re-run
+    const userDataVersion = 'v4'; // bump this whenever you want user data to re-run
 
     // Create a start script
     const commonScript = `#!/bin/bash
@@ -304,8 +304,8 @@ EOF
 ${commonScript}
   docker compose -f ${dockerComposeFileName} build
   docker compose -f ${dockerComposeFileName} up db -d
-  docker compose -f ${dockerComposeFileName} run --rm app npm install
-  ${isProd ? `docker compose -f ${dockerComposeFileName} run --rm app npm run build` : ''}
+  docker compose -f ${dockerComposeFileName} run --rm app npm ci
+  ${isProd ? `docker compose -f ${dockerComposeFileName} up build` : ''}
   sleep 20
   docker compose -f ${dockerComposeFileName} run --rm app npm run migration:run
   docker compose -f ${dockerComposeFileName} run --rm app npm run db:seed
@@ -317,8 +317,8 @@ ${commonScript}
 ${commonScript}
   docker compose -f ${dockerComposeFileName} build
   docker compose -f ${dockerComposeFileName} up db -d
-  docker compose -f ${dockerComposeFileName} run --rm app npm install
-  ${isProd ? `docker compose -f ${dockerComposeFileName} run --rm app npm run build` : ''}
+  docker compose -f ${dockerComposeFileName} run --rm app npm ci
+  ${isProd ? `docker compose -f ${dockerComposeFileName} up build` : ''}
   sleep 20
   docker compose -f ${dockerComposeFileName} run --rm app npm run migration:run
   docker compose -f ${dockerComposeFileName} run --rm app npm run db:seed
@@ -407,7 +407,7 @@ ${commonScript}
       blockDevices: [
         {
           deviceName: '/dev/xvda',
-          volume: ec2.BlockDeviceVolume.ebs(10, {
+          volume: ec2.BlockDeviceVolume.ebs(12, {
             deleteOnTermination: false,
             encrypted: true,
             volumeType: ec2.EbsDeviceVolumeType.GP3,

@@ -1,0 +1,35 @@
+# Runtime data (permissions issues + not needed in image)
+docker/postgres/data
+docker/app-files/data
+
+# Dependencies (installed at runtime by app-build service)
+node_modules
+
+# Build output (produced at runtime by app-build service)
+.next
+
+# Dev/test artifacts
+.git
+.env
+tests
+tests-playwright
+test-results
+playwright-report
+screenshots
+.playwright-mcp
+.playwright-cli
+
+# IDE and tooling
+.vscode
+.kiro
+.kilo
+.codex
+.devin
+.agents
+.pi
+
+# Infra (not needed in app image)
+infra
+
+# SSH keys
+.ssh

@@ -2,10 +2,15 @@
 # - Runs on EC2 with CloudFront in front
 # - Uses EBS bind mounts at './docker/app-files/data' for persistence
 # - NODE_ENV=production
+# - app-build runs first: installs deps and builds the Next.js app.
+# - app and worker start only after app-build completes successfully.
 #
 # Usage: docker compose -f docker-compose.prod.yml up -d
 
 x-app-base: &app-base
+  build:
+    context: .
+    dockerfile: Dockerfile
   working_dir: /app
   environment:
     PORT: 3010
@@ -19,40 +24,58 @@ x-app-base: &app-base
     LLM_API_KEY: ${LLM_API_KEY}
     LLM_MODEL: ${LLM_MODEL}
     NODE_ENV: production
-  depends_on:
-    db:
-      condition: service_healthy
+    TYPEORM_HOST: ${TYPEORM_HOST}
+    TYPEORM_PORT: ${TYPEORM_PORT}
+    TYPEORM_DATABASE: ${TYPEORM_DATABASE}
+    TYPEORM_USERNAME: ${TYPEORM_USERNAME}
+    TYPEORM_PASSWORD: ${TYPEORM_PASSWORD}
 
 services:
 
+  build:
+    <<: *app-base
+    command: sh -c "npm install --include=dev && npm run build"
+    restart: "no"
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
   app:
     <<: *app-base
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: npm run start
+    command: sh -c "npm run start"
+    ports:
+      - "3010:3010"
+    volumes:
+      - .:/app
+      - ./docker/app-files/data:/data
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3010/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
-    volumes:
-      - .:/app
+      start_period: 120s
     restart: always
     extra_hosts:
       - host.docker.internal:host-gateway
+
   worker:
     <<: *app-base
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: npm run worker:start
+    command: npm run worker
     volumes:
-      - /docker/app-files/data:/data
+      - .:/app
+      - ./docker/app-files/data:/data
+    depends_on:
+      db:
+        condition: service_healthy
     restart: always
     extra_hosts:
       - host.docker.internal:host-gateway
+
   db:
     image: postgres:16
     environment:
@@ -60,10 +83,13 @@ services:
       POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
       POSTGRES_DB: ${TYPEORM_DATABASE}
     volumes:
-      - /docker/postgres/data:/var/lib/postgresql/data
+      - ./docker/postgres/data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${TYPEORM_USERNAME} -d ${TYPEORM_DATABASE}"]
       interval: 5s
       timeout: 5s
       retries: 5
     restart: always
+
+volumes:
+  app-data:
