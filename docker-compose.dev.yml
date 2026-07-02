@@ -6,7 +6,7 @@
 # Usage: docker compose -f docker-compose.dev.yml up -d
 
 x-app-base: &app-base
-  image: node:22-alpine
+  image: node:24-alpine
   working_dir: /app
   env_file:
     - .env

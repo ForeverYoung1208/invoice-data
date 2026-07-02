@@ -95,7 +95,22 @@
 - **Notes:** Add 4GB swap file to prevent OOM on small instances. Currently t3.medium (3.7GB RAM) is used, but swap would allow using t3.small (2GB). Also need to increase EBS volume size from 8GB to at least 10GB.
 - **Status:** Completed. Spent: 3h
 
+### 12.B. Move build and npm install to CI/CD pipeline
+- **Estimate:** 2h
+- **Notes:** Currently `npm install` and `npm run build` run inside the container on every startup, causing slow deploys and a downtime window. Move these to the GitHub Actions workflow: build the Docker image in CI, push to ECR, pull and run on EC2. This eliminates runtime installs and reduces deploy downtime.
+- **Status:** Planned (to be addressed as part of task 12 GitHub Actions work)
+
 ### 13. Download source files from task Files tab
 - **Estimate:** 1h
 - **Notes:** Add download button to Files tab in task detail page. Users need ability to download original CSV files that were uploaded. Need to create an API endpoint to serve the raw file for download.
 - **Status:** Completed. Spent: 0.5h
+
+### 14. Docker image build via ECR
+- **Estimate:** 3h
+- **Notes:** Build a proper production Docker image in CI (with dependencies installed and app built inside the image). Push to Amazon ECR. Update EC2 userdata / restart script to pull from ECR instead of running `npm install && npm run build` at container start. This resolves the slow startup and fragile npm-registry-at-runtime problem.
+- **Status:** Planned
+
+### 15. CloudWatch Logs integration
+- **Estimate:** 2h
+- **Notes:** Container logs currently go nowhere persistent — lost on container restart. Install the CloudWatch Logs agent (or use the awslogs Docker log driver) on the EC2 instance. Stream app and worker container logs to a CloudWatch Log Group. Add the necessary IAM permissions to the EC2 role.
+- **Status:** Planned

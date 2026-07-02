@@ -6,7 +6,6 @@
 # Usage: docker compose up
 
 x-app-base: &app-base
-  image: node:22-alpine
   working_dir: /app
   env_file:
     - .env
