@@ -1,7 +1,7 @@
 # Implementation Task Tracker
 
 **Total estimate: ~36 hours**
-**Completed: ~72**
+**Completed: ~84**
 
 ---
 
@@ -88,7 +88,7 @@
 ### 12. Deployment, CICD
 - **Estimate:** 27h
 - **Notes:** Docker, Docker Compose, CI/CD pipeline, deployment scripts
-- **Status:** in progress (aws dev deployment completed. still need to do dev deployment and github actions workflow to deploy updates). Spent: 18h
+- **Status:** in progress (aws dev and prod deployment completed. still need to do github actions workflow to deploy updates). Spent: 30h
 
 ### 12.A. Add swap file for t3.small instances
 - **Estimate:** 1h
